@@ -1,0 +1,2965 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kagami — Capture everything. Keep it local.</title>
+<meta name="description" content="Kagami grabs screenshots, recordings, and GIFs in a free, open-source menu bar app for macOS. Everything stays on your Mac.">
+<link rel="canonical" href="https://kagamiformac.com/">
+<link rel="icon" href="assets/kagami-icon.svg" type="image/svg+xml">
+
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Kagami">
+<meta property="og:url" content="https://kagamiformac.com/">
+<meta property="og:title" content="Kagami — Capture everything. Keep it local.">
+<meta property="og:description" content="Kagami grabs screenshots, recordings, and GIFs in a free, open-source menu bar app for macOS. Everything stays on your Mac.">
+<meta property="og:image" content="https://kagamiformac.com/assets/og-image.png">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Kagami — a free, open-source Mac menu bar app for screenshots, recordings, and GIFs">
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Kagami — Capture everything. Keep it local.">
+<meta name="twitter:description" content="Kagami grabs screenshots, recordings, and GIFs in a free, open-source menu bar app for macOS. Everything stays on your Mac.">
+<meta name="twitter:image" content="https://kagamiformac.com/assets/og-image.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800" rel="stylesheet">
+<script>
+  (function () {
+    try {
+      var choice = localStorage.getItem("kagami-theme");
+      if (choice === "light" || choice === "dark") {
+        document.documentElement.setAttribute("data-theme", choice);
+      }
+    } catch (e) {}
+  })();
+</script>
+<style>
+  :root {
+    --font: "DM Sans", -apple-system, "SF Pro Display", "SF Pro Text", system-ui, sans-serif;
+
+    /* ---- Toolbar tokens (matched to the real app) ---- */
+    --blur-bg: rgba(40, 40, 44, 0.68);
+    --shadow: 0 6px 20px rgba(0, 0, 0, 0.32);
+    --white-100: #ffffff;
+    --white-85: rgba(255, 255, 255, 0.85);
+    --white-55: rgba(255, 255, 255, 0.55);
+    --white-12: rgba(255, 255, 255, 0.12);
+    --white-08: rgba(255, 255, 255, 0.08);
+    --white-06: rgba(255, 255, 255, 0.06);
+    --black: #000000;
+    --red: #ff453a;
+    --accent: #5940FF;
+    --accent-gradient: linear-gradient(180deg, #5940FF 0%, #362699 100%);
+
+    --radius-panel: 20px;
+    --radius-btn: 10px;
+    --radius-icon: 9px;
+
+    /* Hero Mac fake document — fixed light appearance regardless of page theme */
+    --fake-document-bg: color-mix(in srgb, #F9F9F9 96%, black);
+    --fake-window-ink: #16151F;
+    --fake-window-badge-ink: #16151F;
+    --fake-window-subhead-ink: #6e6e73;
+    --fake-window-badge-stroke-opacity: 0.5;
+  }
+
+  /* ---- Dark theme (default + explicit) ---- */
+  :root,
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+
+    --bg-base: #000000;
+    --hero-bg: #000000;
+    --ink: #f5f5f7;
+    --ink-dim: rgba(245, 245, 247, 0.68);
+    --ink-faint: rgba(245, 245, 247, 0.46);
+
+    --nav-bg: rgba(22, 22, 24, 0.62);
+    --nav-border: rgba(255, 255, 255, 0.1);
+    --nav-shadow: 0 14px 36px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    --nav-mark: #ffffff;
+    --nav-cta-bg: rgba(255, 255, 255, 0.06);
+    --nav-cta-border: rgba(255, 255, 255, 0.1);
+    --nav-cta-color: rgba(245, 245, 247, 0.88);
+    --nav-cta-hover-color: var(--accent);
+
+    --hero-glow: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(255,255,255,0.10), rgba(120,120,140,0.05) 45%, transparent 72%);
+    --toolbar-drop-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+    --toolbar-pill-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+    --toolbar-pill-drop-shadow: 0 4px 10px rgba(0, 0, 0, 0.22);
+    --screen-shadow: 0 20px 48px rgba(0, 0, 0, 0.48), 0 0 0 1px rgba(255, 255, 255, 0.05);
+    --screen-base-shadow: 0 10px 20px rgba(0, 0, 0, 0.38);
+    --fake-window-shadow: 0 14px 36px rgba(0, 0, 0, 0.32), 0 0 0 1px rgba(0, 0, 0, 0.08);
+    --device-ui-shadow: 0 16px 36px rgba(0, 0, 0, 0.36);
+    --demo-pill-shadow: 0 8px 18px rgba(0, 0, 0, 0.28);
+
+    --feature-eyebrow-color: #E2DFFB;
+    --feature-eyebrow-stroke-opacity: 1;
+    --demo-frame-bg: #1c1c1e;
+    --demo-frame-shadow: 0 16px 36px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.06);
+
+    --privacy-card-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    --privacy-card-border: rgba(255, 255, 255, 0.08);
+    --privacy-card-shadow: none;
+    --privacy-icon-bg: rgba(255, 255, 255, 0.08);
+    --privacy-icon-color: #ffffff;
+
+    --download-cta-bg: #ffffff;
+    --download-cta-color: #000000;
+    --download-cta-shadow: none;
+    --download-cta-hover-shadow: 0 10px 30px rgba(255, 255, 255, 0.08);
+    --download-note-color: rgba(245, 245, 247, 0.48);
+    --gift-card-bg: #141416;
+    --gift-card-border: rgba(255, 255, 255, 0.06);
+
+    --footer-border: rgba(255, 255, 255, 0.08);
+    --theme-switcher-bg: rgba(255, 255, 255, 0.06);
+    --theme-switcher-border: rgba(255, 255, 255, 0.1);
+    --theme-switcher-active-bg: rgba(255, 255, 255, 0.12);
+    --theme-switcher-active-color: var(--ink);
+  }
+
+  /* ---- Light theme (system preference) ---- */
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      color-scheme: light;
+
+      --bg-base: #F9F9F9;
+      --hero-bg: #F9F9F9;
+      --ink: #1c1c1e;
+      --ink-dim: rgba(28, 28, 30, 0.72);
+      --ink-faint: rgba(28, 28, 30, 0.48);
+
+      --nav-bg: rgba(255, 255, 255, 0.78);
+      --nav-border: rgba(0, 0, 0, 0.08);
+      --nav-shadow: 0 14px 36px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+      --nav-mark: #17171a;
+      --nav-cta-bg: rgba(0, 0, 0, 0.04);
+      --nav-cta-border: rgba(0, 0, 0, 0.08);
+      --nav-cta-color: rgba(28, 28, 30, 0.82);
+      --nav-cta-hover-color: var(--accent);
+
+      --hero-glow: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(89, 64, 255, 0.09), rgba(89, 64, 255, 0.03) 45%, transparent 72%);
+      --toolbar-drop-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --toolbar-pill-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+      --toolbar-pill-drop-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+      --screen-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+      --screen-base-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+      --fake-window-shadow: 0 10px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
+      --device-ui-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+      --demo-pill-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      --demo-frame-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+
+      --feature-eyebrow-color: #5940FF;
+      --feature-eyebrow-stroke-opacity: 0.5;
+
+      --privacy-card-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
+      --privacy-card-border: rgba(0, 0, 0, 0.06);
+      --privacy-card-shadow: 0 2px 14px rgba(0, 0, 0, 0.04);
+      --privacy-icon-bg: rgba(89, 64, 255, 0.08);
+      --privacy-icon-color: #5940FF;
+
+      --download-cta-bg: #17171a;
+      --download-cta-color: #ffffff;
+      --download-cta-shadow: none;
+      --download-cta-hover-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+      --download-note-color: rgba(28, 28, 30, 0.42);
+      --gift-card-bg: #EBEBEB;
+      --gift-card-border: rgba(0, 0, 0, 0.05);
+
+      --footer-border: rgba(0, 0, 0, 0.08);
+      --theme-switcher-bg: rgba(0, 0, 0, 0.04);
+      --theme-switcher-border: rgba(0, 0, 0, 0.08);
+      --theme-switcher-active-bg: #ffffff;
+      --theme-switcher-active-color: var(--ink);
+    }
+  }
+
+  /* ---- Light theme (explicit override) ---- */
+  :root[data-theme="light"] {
+    color-scheme: light;
+
+    --bg-base: #F9F9F9;
+    --hero-bg: #F9F9F9;
+    --ink: #1c1c1e;
+    --ink-dim: rgba(28, 28, 30, 0.72);
+    --ink-faint: rgba(28, 28, 30, 0.48);
+
+    --nav-bg: rgba(255, 255, 255, 0.78);
+    --nav-border: rgba(0, 0, 0, 0.08);
+    --nav-shadow: 0 14px 36px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    --nav-mark: #17171a;
+    --nav-cta-bg: rgba(0, 0, 0, 0.04);
+    --nav-cta-border: rgba(0, 0, 0, 0.08);
+    --nav-cta-color: rgba(28, 28, 30, 0.82);
+    --nav-cta-hover-color: var(--accent);
+
+    --hero-glow: radial-gradient(ellipse 50% 50% at 50% 50%, rgba(89, 64, 255, 0.09), rgba(89, 64, 255, 0.03) 45%, transparent 72%);
+    --toolbar-drop-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --toolbar-pill-shadow: 0 3px 10px rgba(0, 0, 0, 0.06);
+    --toolbar-pill-drop-shadow: 0 3px 8px rgba(0, 0, 0, 0.06);
+    --screen-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    --screen-base-shadow: 0 6px 14px rgba(0, 0, 0, 0.1);
+    --fake-window-shadow: 0 10px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    --device-ui-shadow: 0 10px 24px rgba(0, 0, 0, 0.1);
+    --demo-pill-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --demo-frame-shadow: 0 12px 28px rgba(0, 0, 0, 0.12), inset 0 0 0 1px rgba(0, 0, 0, 0.06);
+
+    --feature-eyebrow-color: #5940FF;
+    --feature-eyebrow-stroke-opacity: 0.5;
+
+    --privacy-card-bg: linear-gradient(165deg, rgba(255, 255, 255, 0.62), rgba(255, 255, 255, 0.34));
+    --privacy-card-border: rgba(0, 0, 0, 0.06);
+    --privacy-card-shadow: 0 2px 14px rgba(0, 0, 0, 0.04);
+    --privacy-icon-bg: rgba(89, 64, 255, 0.08);
+    --privacy-icon-color: #5940FF;
+
+    --download-cta-bg: #17171a;
+    --download-cta-color: #ffffff;
+    --download-cta-shadow: none;
+    --download-cta-hover-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+    --download-note-color: rgba(28, 28, 30, 0.42);
+    --gift-card-bg: #EBEBEB;
+    --gift-card-border: rgba(0, 0, 0, 0.05);
+
+    --footer-border: rgba(0, 0, 0, 0.08);
+    --theme-switcher-bg: rgba(0, 0, 0, 0.04);
+    --theme-switcher-border: rgba(0, 0, 0, 0.08);
+    --theme-switcher-active-bg: #ffffff;
+    --theme-switcher-active-color: var(--ink);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: auto; }
+  html, body { margin: 0; padding: 0; background: var(--bg-base); overflow-x: hidden; width: 100%; }
+  body {
+    font-family: var(--font);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  a { text-decoration: none; color: inherit; }
+  svg { display: block; flex: none; }
+  button { font-family: var(--font); border: none; background: none; color: inherit; cursor: pointer; padding: 0; }
+
+  /* ================= NAV ================= */
+  /* Centered frosted rectangle — fixed/sticky at top, hides while scrolling
+     down and reappears when the user scrolls back up (see scroll listener). */
+  .nav {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    translate: -50% 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(16px, 3vw, 28px);
+    width: max-content;
+    max-width: calc(100vw - 24px);
+    padding: 11px 16px 11px 20px;
+    background: var(--nav-bg);
+    backdrop-filter: blur(26px) saturate(170%);
+    -webkit-backdrop-filter: blur(26px) saturate(170%);
+    border: 1px solid var(--nav-border);
+    border-radius: 20px;
+    box-shadow: var(--nav-shadow);
+    opacity: 1;
+    pointer-events: auto;
+    transition: opacity 0.28s ease, translate 0.28s ease;
+  }
+  .nav.is-hidden {
+    opacity: 0;
+    pointer-events: none;
+    translate: -50% -12px;
+  }
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .nav-logo .mark {
+    width: 30px;
+    aspect-ratio: 49 / 40;
+    flex: none;
+    color: var(--nav-mark);
+  }
+  .nav-logo .mark svg { width: 100%; height: 100%; display: block; }
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    font-size: 14px;
+    color: var(--ink-dim);
+  }
+  .nav-links a { transition: color 150ms ease; }
+  .nav-links a:hover { color: var(--ink); }
+  .nav-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--nav-cta-color);
+    background: var(--nav-cta-bg);
+    border: 1px solid var(--nav-cta-border);
+    padding: 8px 16px;
+    border-radius: 16px;
+    white-space: nowrap;
+    flex: none;
+    transition: color 150ms ease, transform 150ms ease, background-color 150ms ease, border-color 150ms ease;
+  }
+  .nav-cta svg { width: 15px; height: 15px; flex: none; }
+  .nav-cta:hover {
+    color: var(--nav-cta-hover-color);
+    transform: translateY(-1px);
+  }
+  .nav-links-mobile-hide { display: flex; }
+
+  /* ================= HERO ================= */
+  .hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background: var(--hero-bg);
+    padding: 150px 24px 70px;
+  }
+
+  /* Flat backdrop with a single soft spotlight glow behind the device —
+     Apple-keynote style, no color blobs. */
+  .glow {
+    position: absolute;
+    top: 8%;
+    left: 50%;
+    width: 1100px;
+    height: 620px;
+    transform: translateX(-50%);
+    background: var(--hero-glow);
+    filter: blur(10px);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    .toolbar-wrap .toolbar, .macbook, .fake-window, .fw-cta, .fw-subhead { animation: none !important; opacity: 1 !important; scale: 1 !important; translate: 0 0 !important; }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; translate: 0 12px; }
+    to   { opacity: 1; translate: 0 0; }
+  }
+
+  /* ================= Stage (device + floating UI) ================= */
+  /* Plain wrapper on desktop (no layout effect); on mobile it becomes the
+     flex:1 spacer that centers .stage in the room left above the
+     bottom-pinned .scroll-cue — see the mobile breakpoint below. */
+  .hero-stage-wrap { width: 100%; }
+
+  /* Stage is a container: floating toolbars zoom with its width so they
+     keep desktop proportions on any phone. Leave side margin so the
+     overhanging popups aren't clipped by .hero { overflow: hidden }. */
+  .stage {
+    position: relative;
+    z-index: 2;
+    width: min(980px, 82%);
+    margin: 0 auto;
+    container-type: inline-size;
+    container-name: stage;
+  }
+
+  .floating-ui {
+    position: absolute;
+    inset: -18% -14%;
+    z-index: 3;
+    pointer-events: none;
+  }
+  .toolbar-wrap {
+    position: absolute;
+    /* Scale chrome with the Mac — 980px is the design-width of .stage. */
+    zoom: calc(100cqw / 980px);
+  }
+  /* Stepped fallback when length÷length calc isn't available for zoom. */
+  @supports not (zoom: calc(1px / 1px)) {
+    .toolbar-wrap { zoom: 0.3; }
+    @container stage (min-width: 360px) { .toolbar-wrap { zoom: 0.4; } }
+    @container stage (min-width: 520px) { .toolbar-wrap { zoom: 0.55; } }
+    @container stage (min-width: 720px) { .toolbar-wrap { zoom: 0.75; } }
+    @container stage (min-width: 900px) { .toolbar-wrap { zoom: 1; } }
+  }
+  .tw-1 { top: 14%; left: -2%; }
+  .tw-2 { top: 66%; left: 2%; }
+  .tw-3 { top: 12%; right: -1%; }
+  .tw-4 { top: 64%; right: 4%; }
+
+  /* The pop-in/bob transform (rotate/scale/translate) and drop-shadow live
+     on .toolbar itself rather than on .toolbar-wrap. backdrop-filter can't
+     see past an ancestor that has its own filter/transform — that ancestor
+     becomes an isolated backdrop root, so the child's blur would sample
+     nothing and render as a flat, unblurred panel. Keeping .toolbar-wrap
+     as a plain positioning box (no filter/transform of its own) lets the
+     backdrop-filter on .toolbar correctly pick up whatever is rendered
+     behind it on the page. */
+  .toolbar-wrap .toolbar {
+    filter: drop-shadow(var(--toolbar-drop-shadow));
+    opacity: 0;
+    scale: 0.5;
+  }
+  /* Compact pill toolbars read heavier at the same absolute blur — tighten
+     the cast shadow so they feel proportionate to their size. */
+  .floating-ui .toolbar.pill {
+    box-shadow:
+      var(--toolbar-pill-shadow),
+      inset 0 0 0 1px rgba(255,255,255,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.16);
+  }
+  .floating-ui .toolbar-wrap .toolbar.pill {
+    filter: drop-shadow(var(--toolbar-pill-drop-shadow));
+  }
+  .tw-1 .toolbar { rotate: -8deg; }
+  .tw-2 .toolbar { rotate: 6deg; }
+  .tw-3 .toolbar { rotate: 7deg; }
+  .tw-4 .toolbar { rotate: -5deg; }
+
+  /* Toolbars stay hidden until JS adds .show (right after the drag-select
+     demo finishes), then pop in with a springy overshoot and hand off into
+     a continuous float loop. */
+  .floating-ui.show .toolbar-wrap .toolbar {
+    animation-name: popIn, bobA;
+    animation-duration: 0.65s, 8s;
+    animation-timing-function: cubic-bezier(0.34, 1.56, 0.64, 1), ease-in-out;
+    animation-iteration-count: 1, infinite;
+    animation-fill-mode: forwards, none;
+  }
+  .floating-ui.show .tw-1 .toolbar { animation-delay: 0s, 0.65s; }
+  .floating-ui.show .tw-2 .toolbar { animation-delay: 0.22s, 0.87s; animation-name: popIn, bobB; }
+  .floating-ui.show .tw-3 .toolbar { animation-delay: 0.44s, 1.09s; }
+  .floating-ui.show .tw-4 .toolbar { animation-delay: 0.66s, 1.31s; animation-name: popIn, bobB; }
+
+  @keyframes popIn {
+    0%   { opacity: 0; scale: 0.5; }
+    58%  { opacity: 1; scale: 1.08; }
+    100% { opacity: 1; scale: 1; }
+  }
+  @keyframes bobA { 0%,100% { translate: 0 0; } 50% { translate: 0 -14px; } }
+  @keyframes bobB { 0%,100% { translate: 0 0; } 50% { translate: 0 12px; } }
+
+  /* ================= Phone hero: headline replaces the Mac ================= */
+  /* Hidden on desktop/tablet; the mobile breakpoint below swaps it in for
+     .macbook. Sized in plain px/vw (not cqw) since it lives outside the
+     Mac's container-query context. */
+  .hero-copy-mobile {
+    display: none;
+    position: relative;
+    z-index: 2;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    /* Reuses the desktop .selection-box/.sel-handle/.drag-cursor markup
+       (see below); "mbscreen" is the same container-name they already
+       query against, just scoped to this block's own width instead. */
+    container-type: inline-size;
+    container-name: mbscreen;
+  }
+  .hero-copy-mobile .mobile-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: 27px;
+    padding: 0 14px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    /* Same theme-adaptive tokens as .feature-eyebrow — no monitor mockup
+       surrounds this badge on mobile, so it shouldn't stay locked to the
+       fake document's fixed-light ink either. */
+    color: var(--feature-eyebrow-color);
+  }
+  .hero-copy-mobile .mobile-badge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #5940FF 0%, #362699 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: var(--feature-eyebrow-stroke-opacity);
+    pointer-events: none;
+  }
+  .hero-copy-mobile .mobile-headline {
+    margin: 0 0 14px;
+    max-width: 340px;
+    font-size: clamp(26px, 7vw, 34px);
+    line-height: 1.15;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    /* Unlike the desktop headline (locked to --fake-window-ink because it
+       lives inside the light "fake document" monitor mockup), mobile has
+       no monitor around it — it sits directly on the page background, so
+       it should track the page's theme like every other headline. */
+    color: var(--ink);
+  }
+  .hero-copy-mobile .mobile-subhead {
+    margin: 0 auto 24px;
+    max-width: 320px;
+    font-size: 16px;
+    line-height: 1.55;
+    color: var(--ink-dim);
+  }
+  .hero-copy-mobile .mobile-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #fff;
+    background: #17171a;
+    padding: 13px 22px;
+    border-radius: 16px;
+    transition: background-color 150ms ease;
+  }
+  .hero-copy-mobile .mobile-cta:hover { background-color: #5940FF; }
+  .hero-copy-mobile .mobile-cta svg { width: 16px; height: 16px; flex: none; }
+
+  @media (max-width: 640px) {
+    /* Swap device demo for real headline copy — legible text beats a
+       shrunk-to-illegible Mac screen. The floating toolbar pop-ins felt
+       heavy/cluttered at this size, so phones skip them entirely; the
+       mobile-only drag-select flourish (see .hero-copy-mobile markup)
+       is the only motion left in this section.
+       Scoped to .hero specifically — .macbook/.stage/.floating-ui are
+       reused by the "Screen Recording" feature section further down the
+       page, which should keep its own device mockup on mobile. */
+    .hero .stage { width: 100%; }
+    .hero .macbook { display: none; }
+    .hero .floating-ui { display: none; }
+    .hero-copy-mobile { display: flex; }
+  }
+
+  @media (max-width: 400px) {
+    .hero-copy-mobile .mobile-subhead { max-width: 280px; }
+  }
+
+  /* ================= MacBook mockup ================= */
+  .macbook {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 16px;
+    animation: deviceIn 0.9s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  }
+  @keyframes deviceIn {
+    to { opacity: 1; scale: 1; translate: 0 0; }
+  }
+
+  .mb-screen {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 8 / 5;
+    container-type: inline-size;
+    container-name: mbscreen;
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.12), rgba(0,0,0,0.4)),
+      url("https://images.unsplash.com/photo-1750779940369-2b817adea9d7?fm=jpg&q=80&w=2000&auto=format&fit=crop") center 38% / cover no-repeat,
+      linear-gradient(160deg, #16161a, #050506 70%);
+    /* cqw tracks the Mac screen — not the phone viewport — so the bezel
+       and in-screen UI stay proportional as the stage shrinks. */
+    border: clamp(5px, 1.4cqw, 14px) solid #1c1c1e;
+    border-radius: clamp(10px, 2.65cqw, 26px);
+    box-shadow: var(--screen-shadow);
+    overflow: hidden;
+  }
+  .mb-notch {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #050506;
+    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08);
+    z-index: 6;
+  }
+
+  /* --- Fake macOS menu bar --- */
+  .menu-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: clamp(12px, 2.65cqw, 26px);
+    background: rgba(20, 20, 22, 0.42);
+    backdrop-filter: blur(12px) saturate(150%);
+    -webkit-backdrop-filter: blur(12px) saturate(150%);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 clamp(6px, 1.6cqw, 16px);
+    z-index: 2;
+    color: rgba(255,255,255,0.85);
+    font-size: clamp(6px, 1.1cqw, 11px);
+    font-weight: 500;
+  }
+  .menu-bar .mb-left { display: flex; align-items: center; gap: clamp(4px, 1.4cqw, 14px); }
+  .menu-bar .mb-apple { width: clamp(6px, 1cqw, 10px); height: clamp(6px, 1cqw, 10px); opacity: 0.9; }
+  .menu-bar .mb-menu-item { opacity: 0.75; }
+
+  /* --- Fake window (typed headline demo) --- */
+  .fake-window {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 84%;
+    transform: translate(-50%, -50%);
+    border-radius: clamp(5px, 1.1cqw, 11px);
+    background: var(--fake-document-bg);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(0, 0, 0, 0.06);
+    opacity: 0;
+    z-index: 4;
+    overflow: hidden;
+    animation: winIn 0.5s ease forwards;
+    animation-delay: 1s;
+  }
+  @keyframes winIn {
+    to { opacity: 1; }
+  }
+  .fw-titlebar {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: clamp(3px, 0.7cqw, 7px);
+    padding: clamp(4px, 1.2cqw, 12px) clamp(6px, 1.4cqw, 14px);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+  }
+  .fw-titlebar-dots {
+    position: absolute;
+    left: clamp(6px, 1.4cqw, 14px);
+    display: flex;
+    align-items: center;
+    gap: clamp(3px, 0.7cqw, 7px);
+  }
+  .fw-filename {
+    font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    font-size: clamp(5px, 1.1cqw, 11px);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: #6e6e73;
+    user-select: none;
+  }
+  .fw-dot { width: clamp(4px, 1cqw, 10px); height: clamp(4px, 1cqw, 10px); border-radius: 50%; }
+  .fw-dot.red { background: #ff5f57; }
+  .fw-dot.yellow { background: #febc2e; }
+  .fw-dot.green { background: #28c840; }
+
+  .fw-body {
+    padding: clamp(8px, 4cqw, 40px) clamp(10px, 4.5cqw, 44px) clamp(12px, 4.9cqw, 48px);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .fw-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    height: clamp(14px, 3.7cqw, 36px);
+    font-size: clamp(5.5px, 1.22cqw, 12px);
+    font-weight: 600;
+    line-height: 1;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--fake-window-badge-ink);
+    background: none;
+    padding: 0 clamp(7px, 1.6cqw, 16px);
+    border-radius: 12px;
+    margin-bottom: clamp(5px, 1.8cqw, 18px);
+  }
+  .fw-badge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #5940FF 0%, #362699 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: var(--fake-window-badge-stroke-opacity);
+    pointer-events: none;
+  }
+
+  .fw-headline {
+    margin: 0 0 clamp(4px, 1.4cqw, 14px);
+    font-size: clamp(11px, 4.08cqw, 40px);
+    line-height: 1.08;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    color: var(--fake-window-ink);
+    min-height: clamp(22px, 9cqw, 88px);
+  }
+  .fw-headline .grad {
+    background: linear-gradient(100deg, #7c3aed, #db2777 45%, #0284c7);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .fw-subhead {
+    margin: 0 auto clamp(8px, 2.2cqw, 22px);
+    font-size: clamp(6px, 1.53cqw, 15px);
+    line-height: 1.5;
+    color: var(--fake-window-subhead-ink);
+    max-width: min(360px, 88%);
+    min-height: clamp(24px, 6.9cqw, 68px);
+    opacity: 0;
+    translate: 0 6px;
+    transition: opacity 0.45s ease, translate 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .fw-subhead.show { opacity: 1; translate: 0 0; }
+  .type-cursor {
+    display: inline-block;
+    width: 0.07em;
+    margin-left: 1px;
+    background: currentColor;
+    animation: blink 0.9s step-end infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .fw-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: clamp(3px, 0.9cqw, 9px);
+    font-size: clamp(6px, 1.53cqw, 15px);
+    font-weight: 600;
+    color: #fff;
+    background: #17171a;
+    padding: clamp(5px, 1.3cqw, 13px) clamp(10px, 2.4cqw, 24px);
+    border-radius: clamp(8px, 1.6cqw, 16px);
+    box-shadow: none;
+    opacity: 0;
+    scale: 0.9;
+    translate: 0 6px;
+    transition: opacity 0.45s ease, scale 0.45s cubic-bezier(0.22,1,0.36,1), translate 0.45s cubic-bezier(0.22,1,0.36,1), box-shadow 0.25s ease, background-color 150ms ease;
+  }
+  .fw-cta svg { width: clamp(7px, 1.53cqw, 15px); height: clamp(7px, 1.53cqw, 15px); }
+  .fw-cta.show { opacity: 1; scale: 1; translate: 0 0; }
+  .fw-cta.show:hover { background-color: #5940FF; box-shadow: 0 6px 18px rgba(0,0,0,0.18); }
+
+  /* --- Drag-to-select overlay: mirrors Kagami's real AreaSelectorView —
+     everything outside the selection dims, a clean white border + corner
+     handles frame the hole, with a live "W × H" readout above it. --- */
+  .selection-box {
+    position: absolute;
+    border: 1.5px solid rgba(255,255,255,0.95);
+    border-radius: 2px;
+    box-shadow: 0 0 0 2000px rgba(0, 0, 0, 0.45);
+    opacity: 0;
+    z-index: 5;
+    pointer-events: none;
+  }
+  .selection-box.visible { opacity: 1; }
+  .selection-box.animating {
+    transition:
+      left 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      top 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      width 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      height 0.6s cubic-bezier(0.22, 1, 0.36, 1),
+      opacity 0.5s ease;
+  }
+  .sel-handle {
+    position: absolute;
+    width: clamp(4px, 0.8cqw, 8px);
+    height: clamp(4px, 0.8cqw, 8px);
+    background: #fff;
+    border: 1px solid rgba(0,0,0,0.45);
+    border-radius: 1px;
+    transform: translate(-50%, -50%);
+  }
+  .sel-label {
+    position: absolute;
+    top: clamp(-18px, -2.4cqw, -14px);
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    font-weight: 700;
+    font-size: clamp(6px, 1.1cqw, 11px);
+    padding: clamp(2px, 0.4cqw, 4px) clamp(4px, 0.8cqw, 8px);
+    border-radius: 5px;
+    white-space: nowrap;
+  }
+
+  .drag-cursor {
+    position: absolute;
+    z-index: 6;
+    width: clamp(8px, 1.6cqw, 16px);
+    height: clamp(8px, 1.6cqw, 16px);
+    opacity: 0;
+    color: #fff;
+    filter: drop-shadow(0 1px 2px rgba(0,0,0,0.6));
+    pointer-events: none;
+  }
+  .drag-cursor.visible { opacity: 1; }
+  .drag-cursor.animating { transition: left 0.6s cubic-bezier(0.22, 1, 0.36, 1), top 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.3s ease; }
+
+  /* scaleX overhang (instead of width/left) so the chin doesn't widen the
+     stage's layout box and shove the Mac off-center on narrow viewports. */
+  .mb-base {
+    position: relative;
+    width: 100%;
+    height: clamp(10px, 1.6vw, 22px);
+    background: linear-gradient(180deg, #3a3a3e, #17171a 70%);
+    border-radius: 0 0 12px 12px;
+    box-shadow: var(--screen-base-shadow);
+    transform: scaleX(1.08);
+    transform-origin: center top;
+  }
+  .mb-base::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 22%;
+    height: 40%;
+    background: #050506;
+    border-radius: 0 0 10px 10px;
+  }
+
+  /* --- Shared toolbar shell (matches Sources/Kagami/UI/KagamiToolbar.swift) --- */
+  .toolbar {
+    position: relative;
+    isolation: isolate;
+    color: var(--white-85);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0.09), rgba(255,255,255,0) 45%),
+      var(--blur-bg);
+    backdrop-filter: blur(34px) saturate(180%);
+    -webkit-backdrop-filter: blur(34px) saturate(180%);
+    box-shadow:
+      var(--shadow),
+      inset 0 0 0 1px rgba(255,255,255,0.1),
+      inset 0 1px 0 rgba(255,255,255,0.16);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+  }
+  /* Fine grain, same as the subtle noise baked into macOS's own vibrancy
+     materials — without it, flat frosted panels can look a little too
+     "digital" against busy backgrounds. */
+  .toolbar::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='90' height='90'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+    background-size: 90px 90px;
+    opacity: 0.05;
+    mix-blend-mode: overlay;
+    pointer-events: none;
+  }
+  .pill { border-radius: 999px; height: 52px; }
+  .panel { border-radius: var(--radius-panel); }
+
+  .icon-btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn .swatch {
+    width: 34px; height: 34px;
+    border-radius: var(--radius-icon);
+    display: flex; align-items: center; justify-content: center;
+    background: var(--white-08);
+    color: var(--white-85);
+  }
+  .icon-btn.on .swatch { background: var(--white-100); color: var(--black); }
+  .close-btn {
+    width: 40px; height: 40px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--white-55);
+  }
+  .option-group { display: flex; gap: 4px; padding: 2px 4px; background: var(--white-06); border-radius: 10px; }
+
+  .action-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    height: 34px; padding: 0 14px; border-radius: var(--radius-btn);
+    font-size: 14px; font-weight: 600; white-space: nowrap;
+  }
+  .action-btn.primary { background: var(--white-100); color: var(--black); }
+  .action-btn.secondary { background: var(--white-12); color: var(--white-100); }
+  .action-btn.pill-primary { background: var(--white-100); color: var(--black); height: 40px; padding: 0 16px; border-radius: 999px; }
+
+  .recording-toolbar { width: 220px; padding: 0 14px; justify-content: space-between; gap: 10px; }
+  .rec-timer { display: flex; align-items: center; gap: 6px; }
+  .rec-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--red); animation: pulse 0.9s ease-in-out infinite alternate; }
+  @keyframes pulse { from { opacity: 1; } to { opacity: 0.35; } }
+  .rec-time { font-family: "SF Mono", ui-monospace, Menlo, monospace; font-size: 16px; font-weight: 600; min-width: 36px; color: var(--white-85); }
+
+  .scrolling-toolbar { width: auto; min-width: 300px; padding: 0 20px; gap: 14px; }
+  .scrolling-toolbar .action-btn.pill-primary { height: 32px; padding: 0 14px; }
+  .scroll-hint { display: flex; align-items: center; gap: 6px; white-space: nowrap; color: var(--white-85); }
+  .scroll-hint .label-text { font-size: 15px; font-weight: 500; color: var(--white-85); }
+  .scroll-hint .count { font-size: 15px; font-family: "SF Mono", ui-monospace, Menlo, monospace; color: var(--white-55); }
+  .scroll-hint svg { color: var(--white-55); flex: none; }
+  .divider { width: 1px; height: 20px; background: rgba(255,255,255,0.2); }
+
+  .area-ready {
+    width: auto;
+    min-width: 228px;
+    padding: 0 12px;
+    gap: 6px;
+    justify-content: center;
+  }
+
+  .setup-panel { width: 340px; padding: 12px 14px; flex-direction: column; align-items: stretch; gap: 10px; }
+  .setup-row1 { display: flex; align-items: center; gap: 8px; }
+  .setup-row2 { display: flex; gap: 8px; }
+  .setup-row2 .action-btn { flex: 1; height: 32px; font-size: 13px; }
+
+  /* ================= Scroll cue ================= */
+  .scroll-cue {
+    position: relative;
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    margin-top: 60px;
+    color: var(--ink-faint);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    animation: cueFloat 2.4s ease-in-out infinite;
+  }
+  @keyframes cueFloat { 0%,100% { transform: translateY(0); opacity: 0.6; } 50% { transform: translateY(6px); opacity: 1; } }
+
+  /* ================= Feature sections: shared scaffolding ================= */
+  .section {
+    position: relative;
+    z-index: 2;
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 120px clamp(20px, 6vw, 64px);
+    scroll-margin-top: 110px;
+  }
+
+  /* Fade-up reveal, applied to copy blocks and demo frames as they scroll
+     into view. Kept purely opacity/translate so it's cheap to animate. */
+  .reveal {
+    opacity: 0;
+    translate: 0 22px;
+    transition: opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1), translate 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .reveal.in-view { opacity: 1; translate: 0 0; }
+  .reveal.delay-1 { transition-delay: 0.1s; }
+  .reveal.delay-2 { transition-delay: 0.2s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal { transition: none; opacity: 1; translate: 0 0; }
+  }
+
+  .feature {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(32px, 6vw, 72px);
+    align-items: center;
+  }
+  .feature.reverse .feature-copy { order: 2; }
+  .feature.reverse .feature-demo { order: 1; }
+  /* Paired with .reverse: order flips which grid TRACK each item lands in
+     (not just visual position), so the first (larger) track needs to be
+     the one the demo — order:1 — actually ends up occupying. */
+  .feature.wide-demo { grid-template-columns: minmax(0, 1.45fr) minmax(0, 0.8fr); }
+  /* Without .reverse, copy stays in DOM/visual order in the first track and
+     demo in the second — so the fraction split needs to be mirrored to keep
+     the demo column as the larger one. */
+  .feature.wide-demo:not(.reverse) { grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.45fr); }
+
+  .feature-eyebrow {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 14px;
+    border-radius: 12px;
+    background: none;
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 24px;
+    letter-spacing: -0.02em;
+    text-transform: uppercase;
+    color: var(--feature-eyebrow-color);
+    margin: 0 0 14px;
+  }
+  /* Gradient 1px stroke with a transparent interior: a pseudo-element
+     filled with the gradient, then masked down to just its own edge via
+     the content-box/border-box exclude trick (no plain CSS border can
+     take a gradient directly). */
+  .feature-eyebrow::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(135deg, #5940FF 0%, #362699 100%);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    opacity: var(--feature-eyebrow-stroke-opacity);
+    pointer-events: none;
+  }
+  .feature-title {
+    font-size: clamp(26px, 3.4vw, 38px);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  .feature-desc {
+    font-size: clamp(15px, 1.6vw, 17px);
+    line-height: 1.6;
+    color: var(--ink-dim);
+    max-width: 34em;
+    margin: 0;
+  }
+
+  .feature-demo { position: relative; }
+  .demo-frame {
+    position: relative;
+    border-radius: 20px;
+    background: var(--demo-frame-bg);
+    box-shadow: var(--demo-frame-shadow);
+    overflow: hidden;
+  }
+
+  @media (max-width: 860px) {
+    .feature, .feature.wide-demo, .feature.wide-demo:not(.reverse) { grid-template-columns: minmax(0, 1fr); }
+    .feature.reverse .feature-copy, .feature.reverse .feature-demo { order: initial; }
+    .section { padding: 88px clamp(20px, 6vw, 40px); }
+    .section-download {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
+    .download-card {
+      padding: 40px 20px;
+      border-radius: 28px;
+      min-height: 0;
+    }
+  }
+
+  /* ================= Scrolling capture demo ================= */
+  .demo-frame {
+    border-radius: 20px;
+    padding: 16px;
+    background: var(--demo-frame-bg);
+    box-shadow: var(--demo-frame-shadow);
+  }
+  .sc-window {
+    position: relative;
+    height: clamp(320px, 40vw, 420px);
+    border-radius: 13px;
+    overflow: hidden;
+    background: #f5f4f0;
+    box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.35);
+  }
+  .sc-chrome {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    height: 34px;
+    padding: 0 12px;
+    background: #eceae3;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .sc-chrome .fw-dot { width: 8px; height: 8px; }
+  .sc-url {
+    margin-left: 10px;
+    flex: 1;
+    background: rgba(0, 0, 0, 0.05);
+    border-radius: 6px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: rgba(0, 0, 0, 0.45);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sc-viewport { position: relative; height: calc(100% - 34px); overflow: hidden; }
+  .sc-page {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    padding: 22px 26px 40px;
+    background: #f5f4f0;
+    color: #28282b;
+  }
+  .sc-page.animating { transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1); }
+  .sc-hero-title { font-size: 19px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+  .sc-hero-sub { font-size: 12px; color: #6e6e73; margin-bottom: 20px; }
+  .sc-entry { padding: 15px 0; border-top: 1px solid rgba(0, 0, 0, 0.08); }
+  .sc-entry:first-of-type { border-top: none; padding-top: 0; }
+  .sc-entry-date { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase; color: #a09f9a; margin-bottom: 4px; }
+  .sc-entry-title { font-size: 13.5px; font-weight: 600; margin-bottom: 8px; color: #1c1c1e; }
+  .sc-entry-line { height: 6px; border-radius: 4px; background: rgba(0, 0, 0, 0.08); margin-bottom: 6px; width: 100%; }
+  .sc-entry-line.short { width: 58%; margin-bottom: 0; }
+  .sc-entry-img { height: 58px; border-radius: 8px; margin-top: 10px; }
+  .sc-fade-bottom {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 56px;
+    background: linear-gradient(180deg, transparent, #f5f4f0);
+    pointer-events: none;
+  }
+  .sc-pill {
+    position: absolute;
+    left: 50%;
+    bottom: 16px;
+    translate: -50% 0;
+    z-index: 2;
+    filter: drop-shadow(var(--demo-pill-shadow));
+  }
+
+  /* ================= Annotation editor demo ================= */
+  /* Recreates Sources/Kagami/Annotation/AnnotationEditorView.swift chrome
+     1:1 — window radius 18, bars radius 14 (reusing .toolbar's real blur
+     material), tool buttons reusing .icon-btn/.swatch/.option-group so the
+     tool grid matches the app's actual sizing exactly. */
+  .annot-window {
+    max-width: 720px;
+    margin-left: auto;
+    background: linear-gradient(165deg, #1c1c1e, #0d0d0f 75%);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 18px;
+    box-shadow: var(--device-ui-shadow);
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .annot-titlebar { display: flex; align-items: center; gap: 8px; padding: 0 2px; }
+  .annot-titlebar .fw-dot { width: 9px; height: 9px; }
+  .annot-title {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-left: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #fff;
+  }
+  .annot-dims {
+    margin-left: auto;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.45);
+  }
+  .annot-toolbar { border-radius: 14px; padding: 8px 10px; gap: 8px; }
+  /* Mirrors the real editor's ScrollView(.horizontal) tool strip — sized
+     to fit the full tool set in this compact recreation, with horizontal
+     scroll kept as a fallback rather than the primary fit strategy. */
+  .annot-tools {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .annot-tools::-webkit-scrollbar { display: none; }
+  .annot-tools .option-group { padding: 2px 3px; gap: 2px; flex: none; }
+  .annot-tools .icon-btn { width: 29px; height: 29px; }
+  .annot-tools .icon-btn .swatch { width: 23px; height: 23px; border-radius: 6px; }
+  .annot-controls { display: flex; align-items: center; gap: 8px; flex: none; }
+  .annot-swatch {
+    width: 30px; height: 30px;
+    border-radius: 8px;
+    background: #ff453a;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    flex: none;
+  }
+  .annot-picker {
+    min-width: 40px;
+    padding: 6px 10px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    text-align: center;
+  }
+  .annot-canvas {
+    border-radius: 12px;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 12px;
+  }
+  .annot-canvas-media {
+    position: relative;
+    aspect-ratio: 560 / 300;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+  }
+  .annot-image { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .annot-circle-svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    pointer-events: none;
+  }
+  .annot-circle-svg ellipse {
+    fill: none;
+    stroke: #ff453a;
+    stroke-width: 1.6;
+    stroke-linecap: round;
+    stroke-dasharray: 118;
+    stroke-dashoffset: 118;
+    opacity: 0;
+    animation: annotDraw 5s ease-in-out infinite;
+    animation-play-state: paused;
+  }
+  [data-demo].in-view .annot-circle-svg ellipse { animation-play-state: running; }
+  @keyframes annotDraw {
+    0%, 10%  { stroke-dashoffset: 118; opacity: 0; }
+    12%      { opacity: 1; }
+    76%      { stroke-dashoffset: 0; }
+    90%      { stroke-dashoffset: 0; opacity: 1; }
+    100%     { stroke-dashoffset: 0; opacity: 0; }
+  }
+  .annot-cursor {
+    position: absolute;
+    left: 40%; top: 22%;
+    width: 18px; height: 18px;
+    translate: -10% -10%;
+    filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.6));
+    pointer-events: none;
+    opacity: 0;
+    animation: annotCursorMove 5s ease-in-out infinite;
+    animation-play-state: paused;
+  }
+  [data-demo].in-view .annot-cursor { animation-play-state: running; }
+  @keyframes annotCursorMove {
+    0%   { left: 40%; top: 22%; opacity: 0; }
+    5%   { opacity: 1; }
+    12%  { left: 33.9%; top: 31.7%; }
+    24%  { left: 45.9%; top: 37%; }
+    36%  { left: 45.9%; top: 63%; }
+    48%  { left: 33.9%; top: 68.3%; }
+    60%  { left: 21.9%; top: 63%; }
+    70%  { left: 21.9%; top: 37%; }
+    76%  { left: 33.9%; top: 31.7%; }
+    90%  { left: 33.9%; top: 31.7%; opacity: 1; }
+    100% { left: 33.9%; top: 31.7%; opacity: 0; }
+  }
+  .annot-bottombar { border-radius: 14px; padding: 10px 12px; justify-content: space-between; }
+  .annot-actions-left { display: flex; align-items: center; gap: 6px; }
+  .annot-circle-btn {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.88);
+  }
+  .annot-actions-right { display: flex; align-items: center; gap: 8px; }
+  .annot-btn {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 999px;
+  }
+  .annot-btn.secondary { background: rgba(255, 255, 255, 0.08); color: rgba(255, 255, 255, 0.85); }
+  .annot-btn.primary { background: #fff; color: #000; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .annot-cursor { display: none; }
+    .annot-circle-svg ellipse { opacity: 1; stroke-dashoffset: 0; animation: none; }
+  }
+
+  @media (max-width: 640px) {
+    .annot-bottombar { flex-direction: column; align-items: stretch; padding: 10px; gap: 8px; }
+    .annot-actions-left, .annot-actions-right { justify-content: center; }
+    .annot-actions-right { gap: 8px; }
+  }
+
+  /* ================= Screen recording demo ================= */
+  /* Reuses the hero's .macbook/.mb-screen frame at a larger scale, plus
+     the exact same .selection-box/.drag-cursor and .toolbar markup, so the
+     whole sequence is pixel-consistent with the header animation. The
+     setup panel and recording pill live in a .mini-floating-ui layer that
+     sits OUTSIDE the macbook's bounds (mirroring the hero's .floating-ui),
+     anchored to the lower-right rather than centered on top. */
+  .mini-stage { position: relative; max-width: 640px; margin: 0 auto; }
+  .mini-stage .macbook { opacity: 1; scale: 1; translate: 0 0; animation: none; }
+  .mini-stage .mb-screen.rec-bg {
+    background:
+      linear-gradient(180deg, rgba(0,0,0,0.08), rgba(0,0,0,0.4)),
+      url("https://images.unsplash.com/photo-1502134249126-9f3755a50d78?fm=jpg&q=80&w=2000&auto=format&fit=crop") center 55% / cover no-repeat,
+      linear-gradient(160deg, #16161a, #050506 70%);
+  }
+  .mini-floating-ui {
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .rec-setup-wrap, .rec-pill-wrap {
+    position: absolute;
+    right: -4%;
+    bottom: 22%;
+    width: 0; height: 0;
+    /* .toolbar-wrap's base rule sizes the hero's popups with
+       zoom: calc(100cqw / 980px), keyed off the hero's own "stage"
+       query container. These recording-demo wraps live outside that
+       container (.mini-stage never opts into it), so cqw falls back to
+       the small viewport — on desktop that resolves to a zoom well
+       above 1, ballooning the mockup. Reset to 1 so this demo keeps
+       sizing itself via .mini-stage's own max-width + the max-width:
+       640px scale() overrides below. */
+    zoom: 1;
+  }
+  .rec-setup-wrap .toolbar, .rec-pill-wrap .toolbar {
+    position: absolute;
+    right: 0; bottom: 0;
+    translate: 0 0;
+    scale: 0.85;
+    opacity: 0;
+    pointer-events: none;
+    filter: drop-shadow(var(--toolbar-drop-shadow));
+    transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), scale 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .rec-setup-wrap .toolbar { rotate: 4deg; }
+  .rec-pill-wrap .toolbar { rotate: -3deg; }
+  .rec-setup-wrap.show .toolbar, .rec-pill-wrap.show .toolbar { opacity: 1; scale: 1; }
+  .webcam-bubble {
+    position: absolute;
+    left: 5%; bottom: 6%;
+    width: 17%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 2px solid rgba(255, 255, 255, 0.85);
+    box-shadow: var(--device-ui-shadow);
+    background: #17171a;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: rgba(255, 255, 255, 0.55);
+    opacity: 0;
+    scale: 0.7;
+    z-index: 5;
+    transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), scale 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .webcam-bubble img { width: 100%; height: 100%; object-fit: cover; }
+  .webcam-bubble.show { opacity: 1; scale: 1; }
+
+  /* --- "Something's happening on screen" activity: a small notes window
+     that pops in mid-recording with a couple of lines typed into it, plus
+     a cursor that types and clicks around — makes it obvious the demo is
+     recording live on-screen activity, not just a static wallpaper. --- */
+  .rec-note-window {
+    position: absolute;
+    left: 9%;
+    top: 15%;
+    width: 42%;
+    max-width: 250px;
+    border-radius: 10px;
+    background: linear-gradient(165deg, #fbfbf8, #eeebe1);
+    box-shadow: var(--fake-window-shadow);
+    opacity: 0;
+    scale: 0.94;
+    translate: 0 8px;
+    z-index: 4;
+    overflow: hidden;
+    transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), scale 0.35s cubic-bezier(0.22, 1, 0.36, 1), translate 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  .rec-note-window.show { opacity: 1; scale: 1; translate: 0 0; }
+  .rec-note-titlebar {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 10px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  }
+  .rec-note-titlebar .fw-dot { width: 7px; height: 7px; }
+  .rec-note-filename {
+    margin-left: 5px;
+    font-family: "SF Mono", ui-monospace, Menlo, monospace;
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: #6e6e73;
+  }
+  .rec-note-body { padding: 11px 12px 15px; min-height: 46px; }
+  .rec-note-line {
+    margin: 0 0 6px;
+    font-size: 10.5px;
+    line-height: 1.5;
+    font-weight: 500;
+    color: #28282b;
+    min-height: 1.5em;
+  }
+  .rec-activity-cursor {
+    position: absolute;
+    z-index: 6;
+    width: 14px;
+    height: 14px;
+    opacity: 0;
+    color: #fff;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+    pointer-events: none;
+    transition: left 0.55s cubic-bezier(0.22, 1, 0.36, 1), top 0.55s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.25s ease;
+  }
+  .rec-activity-cursor.visible { opacity: 1; }
+  .rec-click-ripple {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255, 255, 255, 0.85);
+    opacity: 0;
+    z-index: 6;
+    pointer-events: none;
+  }
+  .rec-click-ripple.animate { animation: recRipple 0.5s ease-out; }
+  @keyframes recRipple {
+    0%   { opacity: 0.9; scale: 0.3; }
+    100% { opacity: 0; scale: 1.9; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .rec-setup-wrap .toolbar, .rec-pill-wrap .toolbar, .webcam-bubble { transition: none; }
+    .rec-activity-cursor, .rec-click-ripple { display: none; }
+  }
+
+  @media (max-width: 640px) {
+    .rec-setup-wrap, .rec-pill-wrap { right: -2%; bottom: 18%; }
+    .rec-setup-wrap .toolbar, .rec-pill-wrap .toolbar { scale: 0.72; }
+    .rec-setup-wrap.show .toolbar, .rec-pill-wrap.show .toolbar { scale: 0.85; }
+  }
+
+  /* ================= Privacy / security section ================= */
+  .privacy-head {
+    text-align: center;
+    max-width: 620px;
+    margin: 0 auto 52px;
+  }
+  .privacy-head .feature-eyebrow { justify-content: center; }
+  .privacy-head .feature-title { font-size: clamp(28px, 4vw, 42px); }
+  .privacy-head .feature-desc { margin: 0 auto; }
+
+  .privacy-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 16px;
+  }
+  .privacy-card {
+    background: var(--privacy-card-bg);
+    border: 1px solid var(--privacy-card-border);
+    box-shadow: var(--privacy-card-shadow);
+    backdrop-filter: blur(24px) saturate(150%);
+    -webkit-backdrop-filter: blur(24px) saturate(150%);
+    border-radius: 16px;
+    padding: 24px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .privacy-card .icon-wrap {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    background: var(--privacy-icon-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--privacy-icon-color);
+    flex: none;
+  }
+  .privacy-card h3 {
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin: 0;
+    color: var(--ink);
+  }
+  .privacy-card p {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-dim);
+    margin: 0;
+  }
+
+  @media (max-width: 860px) {
+    .privacy-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  }
+  @media (max-width: 480px) {
+    .privacy-grid { grid-template-columns: minmax(0, 1fr); }
+  }
+
+  /* ================= Final download strip ================= */
+  .section-download {
+    padding-top: 80px;
+    padding-bottom: 80px;
+  }
+  .download-card {
+    width: 100%;
+    margin: 0 auto;
+    min-height: 420px;
+    padding: clamp(48px, 8vw, 64px) clamp(28px, 6vw, 56px);
+    border-radius: 40px;
+    background: var(--gift-card-bg);
+    border: 1px solid var(--gift-card-border);
+    display: grid;
+    place-items: center;
+  }
+  .download-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    max-width: 640px;
+    margin: 0 auto;
+  }
+  .download-strip-main {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .download-strip-main h2 {
+    font-size: clamp(26px, 3.2vw, 36px);
+    font-weight: 500;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 16px;
+    color: var(--ink);
+  }
+  .download-strip-main > p {
+    color: var(--ink-dim);
+    font-size: clamp(15px, 1.6vw, 17px);
+    line-height: 1.6;
+    margin: 0 0 32px;
+  }
+  .download-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+  }
+  .download-cta {
+    position: relative;
+    isolation: isolate;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    background: var(--gift-card-bg);
+    padding: 13px 27px;
+    border-radius: 16px;
+    border: none;
+    box-shadow: none;
+    transition: transform 150ms ease, background-color 150ms ease, color 150ms ease, box-shadow 150ms ease, border-color 150ms ease;
+  }
+  .download-cta::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: var(--accent-gradient);
+    -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: exclude;
+    pointer-events: none;
+    transition: opacity 150ms ease;
+  }
+  .download-cta:hover {
+    background-color: var(--accent);
+    color: var(--white-100);
+    box-shadow: var(--download-cta-hover-shadow);
+    transform: translateY(-1px);
+  }
+  .download-cta:hover::before { opacity: 0; }
+  .download-cta svg { width: 17px; height: 17px; }
+  .download-cta-secondary {
+    border: 1px solid var(--nav-cta-border);
+  }
+  .download-cta-secondary::before { display: none; }
+  .download-cta-secondary:hover {
+    background-color: var(--nav-cta-bg);
+    color: var(--accent);
+    border-color: var(--accent);
+    box-shadow: none;
+  }
+  .download-strip .download-note {
+    margin: 16px 0 0;
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 1.4;
+    letter-spacing: 0.02em;
+    color: var(--download-note-color);
+  }
+  .site-footer {
+    border-top: 1px solid var(--footer-border);
+    padding: 28px clamp(20px, 6vw, 64px) 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 18px;
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+  .footer-copy { margin: 0; }
+  .footer-credit { margin: 0; }
+  .footer-credit a {
+    color: var(--ink-dim);
+    transition: color 150ms ease;
+  }
+  .footer-credit a:hover { color: var(--accent); }
+  .footer-github {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    margin: 0;
+    color: var(--ink-dim);
+    text-decoration: none;
+    transition: color 150ms ease;
+  }
+  .footer-github svg { width: 15px; height: 15px; }
+  .footer-github:hover { color: var(--accent); }
+
+  .theme-switcher {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 3px;
+    border-radius: 12px;
+    background: var(--theme-switcher-bg);
+    border: 1px solid var(--theme-switcher-border);
+  }
+  .theme-switcher button {
+    font-size: 11.5px;
+    font-weight: 500;
+    line-height: 1;
+    padding: 8px 12px;
+    border-radius: 9px;
+    color: var(--ink-dim);
+    transition: background-color 150ms ease, color 150ms ease;
+  }
+  .theme-switcher button:hover { color: var(--ink); }
+  .theme-switcher button.is-active {
+    background: var(--theme-switcher-active-bg);
+    color: var(--theme-switcher-active-color);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+  }
+
+  @media (max-width: 640px) {
+    .nav {
+      top: 12px;
+      width: calc(100vw - 20px);
+      max-width: none;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px 10px 14px;
+    }
+    .nav-links-mobile-hide { display: none; }
+    /* .hero-stage-wrap grows to fill the space above the scroll cue and
+       centers the headline within it, so the cue stays pinned near the
+       bottom of the first screen instead of trailing wherever the
+       (variable-height) headline block happens to end. */
+    .hero { padding: 96px 16px 24px; }
+    .hero-stage-wrap { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; }
+    .nav-logo { font-size: 15px; }
+    .nav-cta { font-size: 13px; padding: 8px 14px; }
+    .scroll-cue { margin-top: 0; }
+    .download-actions {
+      flex-direction: column;
+      width: 100%;
+    }
+    .download-actions .download-cta {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .nav-cta { font-size: 12px; padding: 7px 11px; }
+  }
+</style>
+</head>
+<body>
+
+  <nav class="nav">
+    <div class="nav-logo">
+      <span class="mark">
+        <svg viewBox="0 0 49 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M31.3459 16.3636C33.3356 16.3638 34.9488 17.9919 34.9489 20C34.9488 22.0081 33.3356 23.6362 31.3459 23.6364C29.3561 23.6364 27.7431 22.0082 27.743 20C27.7431 17.9918 29.3561 16.3636 31.3459 16.3636Z" fill="currentColor"/>
+          <path fill-rule="evenodd" clip-rule="evenodd" d="M40.3529 0C45.1286 0 49 3.90733 49 8.72727V31.2727C49 36.0927 45.1286 40 40.3529 40H8.64706C3.87142 40 1.16069e-08 36.0927 0 31.2727V8.72727C0 3.90733 3.87142 1.17138e-07 8.64706 0H40.3529ZM9.36765 7.03409V33.2159H15.1324V7.03409H9.36765ZM39.6327 10.6658C39.6326 8.41603 37.2102 7.01807 35.2888 8.15874L19.356 17.6175C17.4614 18.7423 17.4615 21.5076 19.356 22.6325L35.2888 32.0916C37.2102 33.2321 39.6326 31.8339 39.6327 29.5842V10.6658Z" fill="currentColor"/>
+        </svg>
+      </span>
+      Kagami
+    </div>
+    <div class="nav-links nav-links-mobile-hide">
+      <a href="#features">Features</a>
+      <a href="#privacy">Privacy</a>
+      <a href="#download">Download</a>
+    </div>
+    <a class="nav-cta" href="https://github.com/benkrogh/Kagami" target="_blank" rel="noopener noreferrer">{{ICON:github}} View on GitHub</a>
+  </nav>
+
+  <section class="hero">
+    <div class="glow"></div>
+
+    <div class="hero-stage-wrap">
+    <div class="stage">
+      <div class="floating-ui" id="floatingUI">
+        <div class="toolbar-wrap tw-1">
+          <div class="toolbar pill recording-toolbar">
+            <div class="rec-timer">
+              <div class="rec-dot"></div>
+              <div class="rec-time">0:07</div>
+            </div>
+            <div class="option-group">
+              <button class="icon-btn"><span class="swatch">{{ICON:pause}}</span></button>
+              <button class="icon-btn"><span class="swatch">{{ICON:stop}}</span></button>
+            </div>
+            <button class="close-btn">{{ICON:xmark12}}</button>
+          </div>
+        </div>
+
+        <div class="toolbar-wrap tw-2">
+          <div class="toolbar pill area-ready">
+            <button class="action-btn pill-primary">{{ICON:recordcircle}} Click to Record</button>
+            <button class="close-btn">{{ICON:xmark12}}</button>
+          </div>
+        </div>
+
+        <div class="toolbar-wrap tw-3">
+          <div class="toolbar pill scrolling-toolbar">
+            <div class="scroll-hint">
+              {{ICON:arrowdown}}
+              <span class="label-text">Scroll to capture</span>
+              <span class="count">· 12</span>
+            </div>
+            <div class="divider"></div>
+            <button class="action-btn pill-primary">{{ICON:checkmark}} Save</button>
+          </div>
+        </div>
+
+        <div class="toolbar-wrap tw-4">
+          <div class="toolbar panel setup-panel">
+            <div class="setup-row1">
+              <div class="option-group">
+                <button class="icon-btn"><span class="swatch">{{ICON:crop}}</span></button>
+                <button class="icon-btn on"><span class="swatch">{{ICON:mic}}</span></button>
+                <button class="icon-btn on"><span class="swatch">{{ICON:speaker}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:person}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:keyboard}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:cursorclick}}</span></button>
+              </div>
+              <button class="close-btn">{{ICON:xmark14}}</button>
+            </div>
+            <div class="setup-row2">
+              <button class="action-btn primary">{{ICON:recordcircle}} Record Video</button>
+              <button class="action-btn secondary">{{ICON:photostack}} Record GIF</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone-only hero copy: on narrow viewports the Mac's inner text
+           becomes unreadable no matter how it's scaled, so we pull the
+           headline/subhead/CTA out into real, full-size DOM content above
+           the (hidden) device, and let the floating toolbars orbit this
+           block instead of the Mac screen. Desktop/tablet never sees this
+           — see .hero-copy-mobile { display: none } and the mobile
+           breakpoint further down. -->
+      <div class="hero-copy-mobile">
+        <div class="mobile-badge">Free &amp; Secure</div>
+        <h1 class="mobile-headline">A magical way to capture all your best ideas</h1>
+        <p class="mobile-subhead">Kagami grabs screenshots, recordings, and GIFs in a free, open-source menu bar app for MacOS.</p>
+        <a class="mobile-cta" href="https://github.com/benkrogh/Kagami" target="_blank" rel="noopener noreferrer">{{ICON:github}} View on GitHub</a>
+
+        <!-- Same drag-to-select flourish as the desktop demo, retargeted to
+             frame this static headline block instead of the (hidden) Mac. -->
+        <div class="selection-box" id="mobileSelectionBox">
+          <span class="sel-label" id="mobileSelLabel"></span>
+          <span class="sel-handle" style="left:0%;top:0%;"></span>
+          <span class="sel-handle" style="left:50%;top:0%;"></span>
+          <span class="sel-handle" style="left:100%;top:0%;"></span>
+          <span class="sel-handle" style="left:100%;top:50%;"></span>
+          <span class="sel-handle" style="left:100%;top:100%;"></span>
+          <span class="sel-handle" style="left:50%;top:100%;"></span>
+          <span class="sel-handle" style="left:0%;top:100%;"></span>
+          <span class="sel-handle" style="left:0%;top:50%;"></span>
+        </div>
+        <div class="drag-cursor" id="mobileDragCursor">{{ICON:cursor}}</div>
+      </div>
+
+      <div class="macbook">
+        <div class="mb-screen" id="mbScreen">
+          <div class="menu-bar">
+            <div class="mb-left">
+              <span class="mb-apple">{{ICON:apple-white}}</span>
+              <span class="mb-menu-item">Kagami</span>
+              <span class="mb-menu-item">File</span>
+              <span class="mb-menu-item">Edit</span>
+              <span class="mb-menu-item">View</span>
+            </div>
+            <div>9:41</div>
+          </div>
+          <div class="mb-notch"></div>
+
+          <div class="fake-window" id="fakeWindow">
+            <div class="fw-titlebar">
+              <div class="fw-titlebar-dots">
+                <span class="fw-dot red"></span>
+                <span class="fw-dot yellow"></span>
+                <span class="fw-dot green"></span>
+              </div>
+              <span class="fw-filename">brilliant_ideas.md</span>
+            </div>
+            <div class="fw-body">
+              <div class="fw-badge">Free &amp; Secure</div>
+              <h1 class="fw-headline" id="typeHeadline"></h1>
+              <p class="fw-subhead" id="typeSubhead"></p>
+              <a class="fw-cta" id="fwCta" href="https://github.com/benkrogh/Kagami/releases/latest/download/Kagami.pkg">{{ICON:apple}} Download for Mac</a>
+            </div>
+          </div>
+
+          <div class="selection-box" id="selectionBox">
+            <span class="sel-label" id="selLabel"></span>
+            <span class="sel-handle" style="left:0%;top:0%;"></span>
+            <span class="sel-handle" style="left:50%;top:0%;"></span>
+            <span class="sel-handle" style="left:100%;top:0%;"></span>
+            <span class="sel-handle" style="left:100%;top:50%;"></span>
+            <span class="sel-handle" style="left:100%;top:100%;"></span>
+            <span class="sel-handle" style="left:50%;top:100%;"></span>
+            <span class="sel-handle" style="left:0%;top:100%;"></span>
+            <span class="sel-handle" style="left:0%;top:50%;"></span>
+          </div>
+          <div class="drag-cursor" id="dragCursor">{{ICON:cursor}}</div>
+        </div>
+        <div class="mb-base"></div>
+      </div>
+    </div>
+    </div>
+
+    <div class="scroll-cue">
+      Scroll to see more
+      {{ICON:chevrondown}}
+    </div>
+  </section>
+
+  <section class="section" id="features">
+    <div class="feature">
+      <div class="feature-copy reveal">
+        <div class="feature-eyebrow">Scrolling Capture</div>
+        <h2 class="feature-title">Grab those pesky tall screenshots in one go</h2>
+        <p class="feature-desc">Start a scrolling capture and Kagami rides the page down for you — auto-scrolling, stitching every frame together, and handing you back one clean image. No more twelve overlapping screenshots taped together by hand.</p>
+      </div>
+      <div class="feature-demo reveal delay-1">
+        <div class="demo-frame">
+          <div class="sc-window" data-demo="scroll-capture">
+            <div class="sc-chrome">
+              <span class="fw-dot red"></span>
+              <span class="fw-dot yellow"></span>
+              <span class="fw-dot green"></span>
+              <div class="sc-url">kagami.app/changelog</div>
+            </div>
+            <div class="sc-viewport">
+              <div class="sc-page" id="scPage">
+                <div class="sc-hero-title">Kagami Changelog</div>
+                <div class="sc-hero-sub">Everything shipped, straight from the release notes.</div>
+                <div class="sc-entry">
+                  <div class="sc-entry-date">v2.4 — July 2026</div>
+                  <div class="sc-entry-title">Scrolling capture for tall pages</div>
+                  <div class="sc-entry-line"></div>
+                  <div class="sc-entry-line short"></div>
+                  <div class="sc-entry-img" style="background: linear-gradient(135deg, #d7d3ff, #ffd6ea);"></div>
+                </div>
+                <div class="sc-entry">
+                  <div class="sc-entry-date">v2.3 — June 2026</div>
+                  <div class="sc-entry-title">Webcam overlay while recording</div>
+                  <div class="sc-entry-line"></div>
+                  <div class="sc-entry-line short"></div>
+                </div>
+                <div class="sc-entry">
+                  <div class="sc-entry-date">v2.2 — May 2026</div>
+                  <div class="sc-entry-title">Spotlight annotation tool</div>
+                  <div class="sc-entry-line"></div>
+                  <div class="sc-entry-line short"></div>
+                  <div class="sc-entry-img" style="background: linear-gradient(135deg, #bfe9ff, #d7f5d1);"></div>
+                </div>
+                <div class="sc-entry">
+                  <div class="sc-entry-date">v2.1 — April 2026</div>
+                  <div class="sc-entry-title">Faster GIF export</div>
+                  <div class="sc-entry-line"></div>
+                  <div class="sc-entry-line short"></div>
+                </div>
+                <div class="sc-entry">
+                  <div class="sc-entry-date">v2.0 — March 2026</div>
+                  <div class="sc-entry-title">Menu bar quick access</div>
+                  <div class="sc-entry-line"></div>
+                  <div class="sc-entry-line short"></div>
+                </div>
+              </div>
+              <div class="sc-fade-bottom"></div>
+            </div>
+            <div class="toolbar pill scrolling-toolbar sc-pill">
+              <div class="scroll-hint">
+                {{ICON:arrowdown}}
+                <span class="label-text">Scroll to capture</span>
+                <span class="count" id="scCount">· 1</span>
+              </div>
+              <div class="divider"></div>
+              <button class="action-btn pill-primary">{{ICON:checkmark}} Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="annotations">
+    <div class="feature reverse wide-demo">
+      <div class="feature-demo reveal delay-1">
+        <div class="annot-window">
+          <div class="annot-titlebar">
+            <span class="fw-dot red"></span>
+            <span class="fw-dot yellow"></span>
+            <span class="fw-dot green"></span>
+            <div class="annot-title">{{ICON:annPencilOutline}} Annotate</div>
+            <div class="annot-dims">1440 × 900</div>
+          </div>
+          <div class="toolbar annot-toolbar">
+            <div class="annot-tools">
+              <div class="option-group">
+                <button class="icon-btn"><span class="swatch">{{ICON:annSelect}}</span></button>
+              </div>
+              <div class="divider"></div>
+              <div class="option-group">
+                <button class="icon-btn"><span class="swatch">{{ICON:annArrow}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:annLine}}</span></button>
+              </div>
+              <div class="divider"></div>
+              <div class="option-group">
+                <button class="icon-btn"><span class="swatch">{{ICON:annRect}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:annRectFill}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:annEllipse}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:annEllipseFill}}</span></button>
+              </div>
+              <div class="divider"></div>
+              <div class="option-group">
+                <button class="icon-btn on"><span class="swatch">{{ICON:annPencil}}</span></button>
+                <button class="icon-btn"><span class="swatch">{{ICON:annHighlighter}}</span></button>
+              </div>
+              <div class="divider"></div>
+              <div class="option-group">
+                <button class="icon-btn"><span class="swatch">{{ICON:annText}}</span></button>
+              </div>
+              <div class="divider"></div>
+              <div class="option-group">
+                <button class="icon-btn"><span class="swatch">{{ICON:annSpotlight}}</span></button>
+              </div>
+              <div class="divider"></div>
+              <div class="option-group">
+                <button class="icon-btn"><span class="swatch">{{ICON:crop}}</span></button>
+              </div>
+            </div>
+            <div class="divider"></div>
+            <div class="annot-controls">
+              <div class="annot-swatch"></div>
+              <div class="annot-picker">3pt</div>
+            </div>
+          </div>
+          <div class="annot-canvas">
+            <div class="annot-canvas-media" data-demo="annotate">
+              <img class="annot-image" alt="" src="https://images.unsplash.com/photo-1460925895917-afdab827c52f?fm=jpg&q=80&w=1200&auto=format&fit=crop">
+              <svg class="annot-circle-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <ellipse cx="33.9" cy="50" rx="16.96" ry="18.33"></ellipse>
+              </svg>
+              <div class="annot-cursor">{{ICON:cursor}}</div>
+            </div>
+          </div>
+          <div class="toolbar annot-bottombar">
+            <div class="annot-actions-left">
+              <button class="annot-circle-btn">{{ICON:annUndo}}</button>
+              <button class="annot-circle-btn">{{ICON:annRedo}}</button>
+              <button class="annot-circle-btn">{{ICON:annTrash}}</button>
+            </div>
+            <div class="annot-actions-right">
+              <button class="annot-btn secondary">Cancel</button>
+              <button class="annot-btn secondary">Copy</button>
+              <button class="annot-btn primary">Save</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="feature-copy reveal">
+        <div class="feature-eyebrow">Annotations</div>
+        <h2 class="feature-title">Bust out the toolbox for extra ideas</h2>
+        <p class="feature-desc">Need to add a bit more context? Bring any capture into Kagami's annotation tools so you can mark up what matters before you send it anywhere.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="recording">
+    <div class="feature wide-demo">
+      <div class="feature-copy reveal">
+        <div class="feature-eyebrow">Screen Recording</div>
+        <h2 class="feature-title">Record more than just your screen</h2>
+        <p class="feature-desc">Kagami captures your screen alongside system audio, your microphone, and a live webcam bubble, all saved locally as video or GIF when you stop.</p>
+      </div>
+      <div class="feature-demo reveal delay-1">
+        <div class="mini-stage" data-demo="recording">
+          <div class="mini-floating-ui" id="miniFloatingUI">
+            <div class="toolbar-wrap rec-setup-wrap" id="recSetupWrap">
+              <div class="toolbar panel setup-panel">
+                <div class="setup-row1">
+                  <div class="option-group">
+                    <button class="icon-btn"><span class="swatch">{{ICON:crop}}</span></button>
+                    <button class="icon-btn on"><span class="swatch">{{ICON:mic}}</span></button>
+                    <button class="icon-btn on"><span class="swatch">{{ICON:speaker}}</span></button>
+                    <button class="icon-btn on"><span class="swatch">{{ICON:person}}</span></button>
+                    <button class="icon-btn"><span class="swatch">{{ICON:keyboard}}</span></button>
+                    <button class="icon-btn"><span class="swatch">{{ICON:cursorclick}}</span></button>
+                  </div>
+                  <button class="close-btn">{{ICON:xmark14}}</button>
+                </div>
+                <div class="setup-row2">
+                  <button class="action-btn primary">{{ICON:recordcircle}} Record Video</button>
+                  <button class="action-btn secondary">{{ICON:photostack}} Record GIF</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="toolbar-wrap rec-pill-wrap" id="recPillWrap">
+              <div class="toolbar pill recording-toolbar">
+                <div class="rec-timer">
+                  <div class="rec-dot"></div>
+                  <div class="rec-time" id="recTime">0:00</div>
+                </div>
+                <div class="option-group">
+                  <button class="icon-btn"><span class="swatch">{{ICON:pause}}</span></button>
+                  <button class="icon-btn"><span class="swatch">{{ICON:stop}}</span></button>
+                </div>
+                <button class="close-btn">{{ICON:xmark12}}</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="macbook mini-macbook">
+            <div class="mb-screen rec-bg" id="recScreen">
+              <div class="menu-bar">
+                <div class="mb-left">
+                  <span class="mb-apple">{{ICON:apple-white}}</span>
+                  <span class="mb-menu-item">Kagami</span>
+                  <span class="mb-menu-item">File</span>
+                  <span class="mb-menu-item">Edit</span>
+                  <span class="mb-menu-item">View</span>
+                </div>
+                <div>9:41</div>
+              </div>
+              <div class="mb-notch"></div>
+
+              <div class="selection-box" id="recSelectionBox">
+                <span class="sel-label" id="recSelLabel"></span>
+                <span class="sel-handle" style="left:0%;top:0%;"></span>
+                <span class="sel-handle" style="left:50%;top:0%;"></span>
+                <span class="sel-handle" style="left:100%;top:0%;"></span>
+                <span class="sel-handle" style="left:100%;top:50%;"></span>
+                <span class="sel-handle" style="left:100%;top:100%;"></span>
+                <span class="sel-handle" style="left:50%;top:100%;"></span>
+                <span class="sel-handle" style="left:0%;top:100%;"></span>
+                <span class="sel-handle" style="left:0%;top:50%;"></span>
+              </div>
+              <div class="drag-cursor" id="recDragCursor">{{ICON:cursor}}</div>
+
+              <div class="rec-note-window" id="recNoteWindow">
+                <div class="rec-note-titlebar">
+                  <span class="fw-dot red"></span>
+                  <span class="fw-dot yellow"></span>
+                  <span class="fw-dot green"></span>
+                  <span class="rec-note-filename">launch_notes.md</span>
+                </div>
+                <div class="rec-note-body">
+                  <p class="rec-note-line" id="recNoteLine1"></p>
+                  <p class="rec-note-line" id="recNoteLine2"></p>
+                </div>
+              </div>
+              <div class="rec-activity-cursor" id="recActivityCursor">{{ICON:cursor}}</div>
+              <div class="rec-click-ripple" id="recClickRipple"></div>
+
+              <div class="webcam-bubble" id="webcamBubble"><img src="https://images.unsplash.com/photo-1740252117070-7aa2955b25f8?q=80&w=200&h=200&auto=format&fit=crop" alt="" loading="lazy"></div>
+            </div>
+            <div class="mb-base"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="privacy">
+    <div class="privacy-head reveal">
+      <div class="feature-eyebrow">Privacy &amp; Security</div>
+      <h2 class="feature-title">Your ideas are safe here</h2>
+      <p class="feature-desc">Kagami has no cloud storage, no account, and no terms of service granting anyone rights to what you capture.</p>
+    </div>
+    <div class="privacy-grid">
+      <div class="privacy-card reveal">
+        <div class="icon-wrap">{{ICON:privShield}}</div>
+        <h3>100% Local</h3>
+        <p>Every capture, recording, and annotation is written straight to disk on your Mac. Nothing is ever uploaded anywhere.</p>
+      </div>
+      <div class="privacy-card reveal delay-1">
+        <div class="icon-wrap">{{ICON:privNoSignin}}</div>
+        <h3>No Sign-In</h3>
+        <p>No account, no email, no login screen. Just open Kagami and start capturing.</p>
+      </div>
+      <div class="privacy-card reveal delay-2">
+        <div class="icon-wrap">{{ICON:privNoTos}}</div>
+        <h3>No Terms of Service</h3>
+        <p>There's no fine print granting anyone rights to what you capture, because there's no service involved.</p>
+      </div>
+      <div class="privacy-card reveal delay-2">
+        <div class="icon-wrap">{{ICON:privCloudOff}}</div>
+        <h3>Works Offline</h3>
+        <p>No internet connection required. Kagami runs entirely on-device, so your captures stay yours, even offline.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section-download" id="download">
+    <div class="download-card reveal">
+      <div class="download-strip">
+        <div class="download-strip-main">
+          <h2>Kagami is a gift to you</h2>
+          <p>Start capturing your ideas right away and keep it up. It's free forever.</p>
+          <div class="download-actions">
+            <a class="download-cta" id="downloadPrimaryCta" href="https://github.com/benkrogh/Kagami/releases/latest/download/Kagami.pkg">{{ICON:apple}} Download for Mac</a>
+            <a class="download-cta download-cta-secondary" id="downloadSecondaryCta" href="https://github.com/benkrogh/Kagami" target="_blank" rel="noopener noreferrer">{{ICON:github}} Source code</a>
+          </div>
+        </div>
+        <p class="download-note" id="downloadNote">macOS 13 Sonoma or later · Free download</p>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p class="footer-copy">© 2026 Kagami. Made for Mac. Nothing leaves your device.</p>
+    <p class="footer-credit">Designed and built by <a href="https://www.benkrogh.com" target="_blank" rel="noopener noreferrer">Ben Krogh</a></p>
+    <a class="footer-github" href="https://github.com/benkrogh/Kagami" target="_blank" rel="noopener noreferrer">{{ICON:github}} View on GitHub</a>
+    <div class="theme-switcher" role="group" aria-label="Color theme">
+      <button type="button" data-theme-choice="system" class="is-active">System</button>
+      <button type="button" data-theme-choice="light">Light</button>
+      <button type="button" data-theme-choice="dark">Dark</button>
+    </div>
+  </footer>
+
+</body>
+<script>
+  const icons = {
+    pause: `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="5" y="3" width="5" height="18" rx="1.5"/><rect x="14" y="3" width="5" height="18" rx="1.5"/></svg>`,
+    stop: `<svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="3"/></svg>`,
+    xmark12: `<svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"><path d="M4 4l16 16M20 4 4 20"/></svg>`,
+    xmark14: `<svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M4 4l16 16M20 4 4 20"/></svg>`,
+    recordcircle: `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none"/></svg>`,
+    crop: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>`,
+    mic: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="8" y="1" width="8" height="14" rx="4"/><path d="M5 11a1 1 0 0 1 2 0 5 5 0 0 0 10 0 1 1 0 0 1 2 0 7 7 0 0 1-6 6.92V21h3a1 1 0 0 1 0 2H8a1 1 0 0 1 0-2h3v-3.08A7 7 0 0 1 5 11Z"/></svg>`,
+    speaker: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M3 9v6h4l5 5V4L7 9H3Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M19.5 6a8.5 8.5 0 0 1 0 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>`,
+    person: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="10" r="3.2" fill="currentColor" stroke="none"/><path d="M6 19c1.2-3 3.4-4.5 6-4.5s4.8 1.5 6 4.5" fill="none" stroke-linecap="round"/></svg>`,
+    keyboard: `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h0M10 10h0M14 10h0M18 10h0M6 14h12" stroke-linecap="round" stroke-width="2.4"/></svg>`,
+    cursorclick: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M6 2 18 12l-5 1.4L15.5 20l-2.6 1L10.8 14 6 17.5Z"/><path d="M20 2l2 2M22 8h3M18 2v-3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" fill="none"/></svg>`,
+    photostack: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="7" width="15" height="12" rx="2" transform="rotate(-6 12 13)"/><circle cx="10.5" cy="12" r="1.3" fill="currentColor" stroke="none"/><path d="M6 17l4-3.5 3 2 4-4.5" stroke-linecap="round"/></svg>`,
+    arrowdown: `<svg width="12" height="12" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M12 4v16M6 14l6 6 6-6"/></svg>`,
+    checkmark: `<svg width="11" height="11" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M4 12l6 6L20 6"/></svg>`,
+    chevrondown: `<svg width="14" height="14" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"><path d="M6 9l6 6 6-6"/></svg>`,
+    apple: `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16.7 12.9c0-2 1.1-3.5 2.9-4.4-.9-1.3-2.3-2.1-4-2.2-1.7-.1-3 1-3.8 1-.9 0-2.1-1-3.5-1-2.3.1-4.7 1.9-4.7 5.6 0 1.2.2 2.4.6 3.6.6 1.7 2.6 5.7 4.7 5.6 1.1 0 1.9-.8 3.3-.8 1.4 0 2.1.8 3.4.8 2.1 0 3.9-3.4 4.5-4.9-2.4-1.1-3.4-2.4-3.4-3.3Zm-2.9-8.4c.7-.9 1.2-2.1 1.1-3.4-1.2.1-2.5.8-3.3 1.7-.7.8-1.3 2-1.1 3.2 1.3.1 2.6-.7 3.3-1.5Z"/></svg>`,
+    "apple-white": `<svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M16.7 12.9c0-2 1.1-3.5 2.9-4.4-.9-1.3-2.3-2.1-4-2.2-1.7-.1-3 1-3.8 1-.9 0-2.1-1-3.5-1-2.3.1-4.7 1.9-4.7 5.6 0 1.2.2 2.4.6 3.6.6 1.7 2.6 5.7 4.7 5.6 1.1 0 1.9-.8 3.3-.8 1.4 0 2.1.8 3.4.8 2.1 0 3.9-3.4 4.5-4.9-2.4-1.1-3.4-2.4-3.4-3.3Zm-2.9-8.4c.7-.9 1.2-2.1 1.1-3.4-1.2.1-2.5.8-3.3 1.7-.7.8-1.3 2-1.1 3.2 1.3.1 2.6-.7 3.3-1.5Z"/></svg>`,
+    github: `<svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.73.5.5 5.73.5 12c0 5.08 3.29 9.38 7.86 10.9.57.1.78-.25.78-.55 0-.27-.01-1.17-.02-2.12-3.2.7-3.88-1.36-3.88-1.36-.52-1.34-1.28-1.7-1.28-1.7-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.19 1.76 1.19 1.03 1.75 2.69 1.25 3.35.96.1-.74.4-1.25.72-1.54-2.56-.29-5.25-1.28-5.25-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.04 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.79 0c2.21-1.49 3.18-1.18 3.18-1.18.63 1.58.23 2.75.11 3.04.74.81 1.19 1.84 1.19 3.1 0 4.43-2.7 5.41-5.27 5.7.42.36.78 1.06.78 2.15 0 1.56-.01 2.81-.02 3.19 0 .3.2.66.79.55A10.52 10.52 0 0 0 23.5 12C23.5 5.73 18.27.5 12 .5Z"/></svg>`,
+    cursor: `<svg width="16" height="16" viewBox="0 0 24 24" fill="white" stroke="black" stroke-width="1"><path d="M4 2l14 6.5-5.3 1.7 3.6 6.2-2.4 1.4-3.6-6.2-3.7 4.1z"/></svg>`,
+    annSelect: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M4 2l14 6.5-5.3 1.7 3.6 6.2-2.4 1.4-3.6-6.2-3.7 4.1z"/></svg>`,
+    annArrow: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 18L18 6M18 6h-8M18 6v8"/></svg>`,
+    annLine: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 18L18 6"/></svg>`,
+    annRect: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="6" width="16" height="12" rx="2"/></svg>`,
+    annRectFill: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="6" width="16" height="12" rx="2"/></svg>`,
+    annEllipse: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"/></svg>`,
+    annEllipseFill: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>`,
+    annPencil: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M14.7 3.3l4 4L9.5 16.5l-4.9 1.1 1.1-4.9 9-9.4z"/></svg>`,
+    annHighlighter: `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M5 19l3-3 8-8 3 3-8 8-3 3H5v-3z"/></svg>`,
+    annText: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 6h14M12 6v13"/></svg>`,
+    annSpotlight: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4.5" fill="currentColor" stroke="none"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>`,
+    annUndo: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 7L4 11l4 4M4 11h9a5 5 0 010 10h-2"/></svg>`,
+    annRedo: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 7l4 4-4 4M20 11h-9a5 5 0 000 10h2"/></svg>`,
+    annTrash: `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 7h14M9 7V5a1 1 0 011-1h4a1 1 0 011 1v2M7 7l1 13a1 1 0 001 1h6a1 1 0 001-1l1-13"/></svg>`,
+    annPencilOutline: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 3.3l4 4L9.5 16.5l-4.9 1.1 1.1-4.9 9-9.4z"/></svg>`,
+    privShield: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l7 3v5c0 5-3 8.5-7 10-4-1.5-7-5-7-10V6l7-3z"/><path d="M9 12l2.2 2.2L15.5 10"/></svg>`,
+    privNoSignin: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="3.2"/><path d="M5.5 20c1.2-3.4 3.6-5 6.5-5s5.3 1.6 6.5 5"/><path d="M4 4l16 16"/></svg>`,
+    privNoTos: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 3h7l4 4v13a1 1 0 01-1 1H7a1 1 0 01-1-1V4a1 1 0 011-1z"/><path d="M14 3v4h4"/><path d="M9.5 13.5l4 4M13.5 13.5l-4 4"/></svg>`,
+    privCloudOff: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17a4 4 0 01-.6-7.96 5.5 5.5 0 0110.5-1.94A4.5 4.5 0 0119 16.5"/><path d="M3 3l18 18"/></svg>`
+  };
+  document.body.innerHTML = document.body.innerHTML.replace(/\{\{ICON:([a-z0-9-]+)\}\}/gi, (_, name) => icons[name] || "");
+
+  /* ============================================================
+     Non-Mac visitors (phones, tablets, Windows, etc.) can't install
+     the .pkg — promote GitHub as the primary action and keep the
+     Mac download as a secondary "open this later on a Mac" path.
+  ============================================================ */
+  (function () {
+    const ua = navigator.userAgent || "";
+    const platform = navigator.platform || "";
+    const isIpadOs = platform === "MacIntel" && navigator.maxTouchPoints > 1;
+    const isAppleMobile = /iPhone|iPod|iPad/.test(ua) || isIpadOs;
+    const isMacDesktop = /Mac/.test(platform) && !isIpadOs && !isAppleMobile;
+    if (isMacDesktop) return;
+
+    const GITHUB = "https://github.com/benkrogh/Kagami";
+    const PKG = "https://github.com/benkrogh/Kagami/releases/latest/download/Kagami.pkg";
+
+    const fwCta = document.getElementById("fwCta");
+    if (fwCta) {
+      fwCta.href = GITHUB;
+      fwCta.target = "_blank";
+      fwCta.rel = "noopener noreferrer";
+      fwCta.innerHTML = icons.github + " View on GitHub";
+    }
+
+    const primary = document.getElementById("downloadPrimaryCta");
+    const secondary = document.getElementById("downloadSecondaryCta");
+    const note = document.getElementById("downloadNote");
+    if (primary && secondary) {
+      primary.href = GITHUB;
+      primary.target = "_blank";
+      primary.rel = "noopener noreferrer";
+      primary.innerHTML = icons.github + " View on GitHub";
+      primary.classList.remove("download-cta-secondary");
+
+      secondary.href = PKG;
+      secondary.removeAttribute("target");
+      secondary.removeAttribute("rel");
+      secondary.innerHTML = icons.apple + " Download for Mac";
+      secondary.classList.add("download-cta-secondary");
+    }
+    if (note) {
+      note.textContent = "Mac app · Free & open source · Download on your Mac";
+    }
+  })();
+
+  /* ============================================================
+     Theme: system default, with optional light/dark override
+     persisted in localStorage. "System" removes data-theme so
+     prefers-color-scheme media queries drive the palette.
+  ============================================================ */
+  (function () {
+    const STORAGE_KEY = "kagami-theme";
+    const root = document.documentElement;
+    const buttons = document.querySelectorAll("[data-theme-choice]");
+
+    function getStoredChoice() {
+      try {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        return stored === "light" || stored === "dark" || stored === "system" ? stored : "system";
+      } catch (e) {
+        return "system";
+      }
+    }
+
+    function applyTheme(choice) {
+      if (choice === "light" || choice === "dark") {
+        root.setAttribute("data-theme", choice);
+      } else {
+        root.removeAttribute("data-theme");
+      }
+
+      buttons.forEach((button) => {
+        button.classList.toggle("is-active", button.dataset.themeChoice === choice);
+      });
+
+      try {
+        localStorage.setItem(STORAGE_KEY, choice);
+      } catch (e) {}
+    }
+
+    applyTheme(getStoredChoice());
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", () => {
+        applyTheme(button.dataset.themeChoice || "system");
+      });
+    });
+  })();
+
+  /* ============================================================
+     Subtle eased scroll for in-page anchor links.
+  ============================================================ */
+  (function () {
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    let activeFrame = null;
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function getScrollTargetY(el) {
+      const margin = parseFloat(getComputedStyle(el).scrollMarginTop) || 0;
+      return Math.max(0, el.getBoundingClientRect().top + window.scrollY - margin);
+    }
+
+    function smoothScrollTo(y) {
+      if (activeFrame) cancelAnimationFrame(activeFrame);
+
+      if (reduceMotion) {
+        window.scrollTo(0, y);
+        return Promise.resolve();
+      }
+
+      const startY = window.scrollY;
+      const delta = y - startY;
+      if (Math.abs(delta) < 2) return Promise.resolve();
+
+      const duration = Math.min(840, Math.max(520, Math.abs(delta) * 0.48));
+      const start = performance.now();
+
+      return new Promise((resolve) => {
+        function step(now) {
+          const progress = Math.min((now - start) / duration, 1);
+          window.scrollTo(0, startY + delta * easeOutCubic(progress));
+          if (progress < 1) {
+            activeFrame = requestAnimationFrame(step);
+          } else {
+            activeFrame = null;
+            resolve();
+          }
+        }
+        activeFrame = requestAnimationFrame(step);
+      });
+    }
+
+    window.smoothScrollToElement = function (el) {
+      return smoothScrollTo(getScrollTargetY(el));
+    };
+  })();
+
+  /* ============================================================
+     Nav: fixed at the top; hides while scrolling down and fades
+     back in when scrolling up. Anchor-link clicks use the eased
+     scroll above, with the nav kept visible until the user
+     scrolls again afterward.
+  ============================================================ */
+  (function () {
+    const nav = document.querySelector(".nav");
+    const topAlwaysShow = 72;
+    const scrollThreshold = 8;
+    let lastY = window.scrollY || 0;
+    let hidden = false;
+    let anchorNavigating = false;
+
+    function setHidden(nextHidden) {
+      if (!nav || hidden === nextHidden) return;
+      hidden = nextHidden;
+      nav.classList.toggle("is-hidden", hidden);
+    }
+
+    function syncScrollPosition() {
+      lastY = window.scrollY || document.documentElement.scrollTop || 0;
+    }
+
+    function finishAnchorNavigation() {
+      anchorNavigating = false;
+      setHidden(false);
+      syncScrollPosition();
+    }
+
+    function onScroll() {
+      if (!nav) return;
+      const y = window.scrollY || document.documentElement.scrollTop || 0;
+      const delta = y - lastY;
+
+      if (anchorNavigating) {
+        lastY = y;
+        return;
+      }
+
+      if (y <= topAlwaysShow) {
+        setHidden(false);
+      } else if (delta > scrollThreshold) {
+        setHidden(true);
+      } else if (delta < -scrollThreshold) {
+        setHidden(false);
+      }
+
+      lastY = y;
+    }
+
+    document.addEventListener("click", (event) => {
+      const link = event.target.closest('a[href^="#"]');
+      if (!link) return;
+      const hash = link.getAttribute("href");
+      if (!hash || hash === "#") return;
+      const target = document.querySelector(hash);
+      if (!target) return;
+
+      event.preventDefault();
+      anchorNavigating = true;
+      setHidden(false);
+
+      window.smoothScrollToElement(target).then(finishAnchorNavigation);
+    });
+
+    if (nav) {
+      window.addEventListener("scroll", onScroll, { passive: true });
+      onScroll();
+    }
+  })();
+
+  /* ============================================================
+     Feature sections: fade-up reveal for copy/demo blocks, plus a
+     second observer that toggles .in-view on each [data-demo] root
+     and fires demo:enter/demo:leave so individual demos below can
+     start/stop their own animation loops only while visible.
+  ============================================================ */
+  (function () {
+    const revealEls = document.querySelectorAll(".reveal");
+    const demoEls = document.querySelectorAll("[data-demo]");
+
+    if (!("IntersectionObserver" in window)) {
+      revealEls.forEach((el) => el.classList.add("in-view"));
+      demoEls.forEach((el) => el.classList.add("in-view"));
+      return;
+    }
+
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add("in-view");
+          revealObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.2, rootMargin: "0px 0px -60px 0px" });
+    revealEls.forEach((el) => revealObserver.observe(el));
+
+    const demoObserver = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        const el = entry.target;
+        if (entry.isIntersecting) {
+          el.classList.add("in-view");
+          el.dispatchEvent(new CustomEvent("demo:enter"));
+        } else {
+          el.classList.remove("in-view");
+          el.dispatchEvent(new CustomEvent("demo:leave"));
+        }
+      });
+    }, { threshold: 0.35 });
+    demoEls.forEach((el) => demoObserver.observe(el));
+  })();
+
+  /* ============================================================
+     Scrolling capture demo: auto-scrolls the fake changelog page one
+     "frame" at a time while the section is in view, ticking the pill's
+     counter up to match, then resets and loops.
+  ============================================================ */
+  (function () {
+    const root = document.querySelector('[data-demo="scroll-capture"]');
+    if (!root) return;
+
+    const viewport = root.querySelector(".sc-viewport");
+    const page = root.querySelector("#scPage");
+    const countEl = root.querySelector("#scCount");
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    const stepPx = 128;
+    const stepDelay = 950;
+    let active = false;
+    let timeoutId = null;
+    let count = 1;
+
+    function resetPage() {
+      page.classList.remove("animating");
+      page.style.transform = "translateY(0px)";
+      count = 1;
+      countEl.textContent = "· " + count;
+      void page.getBoundingClientRect();
+    }
+
+    function tick() {
+      if (!active) return;
+      const maxScroll = Math.max(40, page.scrollHeight - viewport.clientHeight);
+      page.classList.add("animating");
+      const y = Math.min(maxScroll, count * stepPx);
+      page.style.transform = `translateY(-${y}px)`;
+      countEl.textContent = "· " + count;
+
+      if (y >= maxScroll) {
+        timeoutId = setTimeout(() => {
+          if (!active) return;
+          resetPage();
+          timeoutId = setTimeout(tick, 700);
+        }, 1200);
+        return;
+      }
+      count += 1;
+      timeoutId = setTimeout(tick, stepDelay);
+    }
+
+    function start() {
+      if (active) return;
+      active = true;
+      resetPage();
+      if (reduceMotion) return;
+      timeoutId = setTimeout(tick, 600);
+    }
+
+    function stop() {
+      active = false;
+      if (timeoutId) clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+
+    root.addEventListener("demo:enter", start);
+    root.addEventListener("demo:leave", stop);
+  })();
+
+  /* ============================================================
+     Screen recording demo: drag out a selection -> setup panel pops
+     in -> swaps to the ticking recording pill + webcam bubble, then
+     loops, reusing the exact same selection-box/toolbar mechanics as
+     the hero sequence above.
+  ============================================================ */
+  (function () {
+    const root = document.querySelector('[data-demo="recording"]');
+    if (!root) return;
+
+    const screen = root.querySelector("#recScreen");
+    const selection = root.querySelector("#recSelectionBox");
+    const selLabel = root.querySelector("#recSelLabel");
+    const cursor = root.querySelector("#recDragCursor");
+    const setupWrap = root.querySelector("#recSetupWrap");
+    const pillWrap = root.querySelector("#recPillWrap");
+    const webcam = root.querySelector("#webcamBubble");
+    const timeEl = root.querySelector("#recTime");
+    const noteWindow = root.querySelector("#recNoteWindow");
+    const noteLine1 = root.querySelector("#recNoteLine1");
+    const noteLine2 = root.querySelector("#recNoteLine2");
+    const activityCursor = root.querySelector("#recActivityCursor");
+    const ripple = root.querySelector("#recClickRipple");
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    let active = false;
+    let timers = [];
+    let tickInterval = null;
+
+    function after(ms, fn) {
+      const id = setTimeout(() => { if (active) fn(); }, ms);
+      timers.push(id);
+    }
+    function clearTimers() {
+      timers.forEach(clearTimeout);
+      timers = [];
+      if (tickInterval) clearInterval(tickInterval);
+      tickInterval = null;
+    }
+
+    function reset() {
+      selection.classList.remove("visible", "animating");
+      cursor.classList.remove("visible", "animating");
+      setupWrap.classList.remove("show");
+      pillWrap.classList.remove("show");
+      webcam.classList.remove("show");
+      noteWindow.classList.remove("show");
+      activityCursor.classList.remove("visible");
+      ripple.classList.remove("animate");
+      noteLine1.textContent = "";
+      noteLine2.textContent = "";
+      timeEl.textContent = "0:00";
+      stopTimer();
+    }
+
+    // Types `text` into `el` one character at a time with a blinking caret,
+    // mirroring the hero's typing effect but scoped to this closure's own
+    // `active`/`timers` so it cancels cleanly when the demo scrolls away.
+    function typeText(el, text, speed, onDone) {
+      el.textContent = "";
+      const caret = document.createElement("span");
+      caret.className = "type-cursor";
+      el.appendChild(caret);
+      let i = 0;
+      function step() {
+        if (!active) return;
+        if (i >= text.length) {
+          caret.remove();
+          onDone && onDone();
+          return;
+        }
+        caret.insertAdjacentText("beforebegin", text[i]);
+        i += 1;
+        after(speed, step);
+      }
+      after(speed, step);
+    }
+
+    // Moves the little activity cursor to a point (relative to #recScreen)
+    // and, after it arrives, pops a click ripple there — a quick visual
+    // cue that "someone" is actively clicking around while recording.
+    function clickAt(x, y, delay) {
+      activityCursor.style.left = x + "px";
+      activityCursor.style.top = y + "px";
+      after(delay, () => {
+        ripple.style.left = x + "px";
+        ripple.style.top = y + "px";
+        ripple.classList.remove("animate");
+        void ripple.getBoundingClientRect();
+        ripple.classList.add("animate");
+      });
+    }
+
+    function runSelectionDrag() {
+      const rect = screen.getBoundingClientRect();
+      const startX = rect.width * 0.16;
+      const startY = rect.height * 0.24;
+      const endX = rect.width * 0.84;
+      const endY = rect.height * 0.82;
+
+      selLabel.textContent = Math.round(endX - startX) + " × " + Math.round(endY - startY);
+      selection.style.left = startX + "px";
+      selection.style.top = startY + "px";
+      selection.style.width = "0px";
+      selection.style.height = "0px";
+      cursor.style.left = startX + "px";
+      cursor.style.top = startY + "px";
+
+      selection.classList.add("visible");
+      cursor.classList.add("visible");
+      void selection.getBoundingClientRect();
+
+      after(20, () => {
+        selection.classList.add("animating");
+        cursor.classList.add("animating");
+        selection.style.left = startX + "px";
+        selection.style.top = startY + "px";
+        selection.style.width = (endX - startX) + "px";
+        selection.style.height = (endY - startY) + "px";
+        cursor.style.left = (endX - 4) + "px";
+        cursor.style.top = (endY - 4) + "px";
+      });
+    }
+
+    function startTimer() {
+      stopTimer();
+      let secs = 0;
+      timeEl.textContent = "0:00";
+      tickInterval = setInterval(() => {
+        secs += 1;
+        const m = Math.floor(secs / 60);
+        const s = secs % 60;
+        timeEl.textContent = m + ":" + String(s).padStart(2, "0");
+      }, 1000);
+    }
+    function stopTimer() {
+      if (tickInterval) clearInterval(tickInterval);
+      tickInterval = null;
+    }
+
+    function cycle() {
+      if (!active) return;
+      reset();
+      after(450, runSelectionDrag);
+      after(1150, () => {
+        cursor.classList.remove("visible");
+        setupWrap.classList.add("show");
+      });
+      after(2750, () => {
+        setupWrap.classList.remove("show");
+        selection.classList.remove("visible");
+      });
+      after(2950, () => {
+        pillWrap.classList.add("show");
+        webcam.classList.add("show");
+        startTimer();
+      });
+
+      // While "recording", something visibly happens on screen: a notes
+      // window pops in and a cursor types into it, then clicks over to
+      // the menu bar — proof the capture is grabbing live activity.
+      after(3300, () => {
+        noteWindow.classList.add("show");
+        const rect = screen.getBoundingClientRect();
+        const wrect = noteWindow.getBoundingClientRect();
+        const cx = wrect.left - rect.left + wrect.width * 0.62;
+        const cy = wrect.top - rect.top + 13;
+        activityCursor.style.left = cx + "px";
+        activityCursor.style.top = cy + "px";
+        activityCursor.classList.add("visible");
+      });
+      after(3700, () => {
+        const rect = screen.getBoundingClientRect();
+        const wrect = noteWindow.getBoundingClientRect();
+        activityCursor.style.left = (wrect.left - rect.left + wrect.width * 0.3) + "px";
+        activityCursor.style.top = (wrect.top - rect.top + wrect.height * 0.45) + "px";
+      });
+      after(4300, () => typeText(noteLine1, "New capture flow shipped \u{1F389}", 45));
+      after(6650, () => typeText(noteLine2, "Record a demo for launch day", 42));
+      after(9500, () => {
+        const rect = screen.getBoundingClientRect();
+        clickAt(rect.width * 0.5, 14, 550);
+      });
+      after(10600, () => {
+        noteWindow.classList.remove("show");
+        activityCursor.classList.remove("visible");
+      });
+
+      after(12950, () => {
+        pillWrap.classList.remove("show");
+        webcam.classList.remove("show");
+        noteWindow.classList.remove("show");
+        activityCursor.classList.remove("visible");
+        stopTimer();
+      });
+      after(13500, cycle);
+    }
+
+    function start() {
+      if (active) return;
+      active = true;
+      if (reduceMotion) {
+        pillWrap.classList.add("show");
+        webcam.classList.add("show");
+        noteWindow.classList.add("show");
+        noteLine1.textContent = "New capture flow shipped \u{1F389}";
+        noteLine2.textContent = "Record a demo for launch day";
+        timeEl.textContent = "0:07";
+        return;
+      }
+      cycle();
+    }
+
+    function stop() {
+      active = false;
+      clearTimers();
+      reset();
+    }
+
+    root.addEventListener("demo:enter", start);
+    root.addEventListener("demo:leave", stop);
+  })();
+
+  /* ============================================================
+     Phone hero: no Mac, no typed headline, no toolbar pop-ins — just a
+     quick drag-select flourish that frames the static headline block
+     once, then fades away. Mirrors the desktop drag-select mechanics
+     in the block below, retargeted at .hero-copy-mobile itself instead
+     of the fake-window/mb-screen pair (there's no separate "device
+     screen" here, so the same rect is used as both bounds and target).
+  ============================================================ */
+  (function () {
+    const isPhoneHero = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!isPhoneHero || reduceMotion) return;
+
+    const $copy = document.querySelector(".hero-copy-mobile");
+    const $box = document.getElementById("mobileSelectionBox");
+    const $label = document.getElementById("mobileSelLabel");
+    const $cursor = document.getElementById("mobileDragCursor");
+    if (!$copy || !$box || !$label || !$cursor) return;
+
+    const pad = 14;
+
+    setTimeout(() => {
+      const rect = $copy.getBoundingClientRect();
+      const startX = -pad;
+      const startY = -pad;
+      const endX = rect.width + pad;
+      const endY = rect.height + pad;
+
+      $label.textContent = Math.round(endX - startX) + " × " + Math.round(endY - startY);
+      $box.style.left = startX + "px";
+      $box.style.top = startY + "px";
+      $box.style.width = "0px";
+      $box.style.height = "0px";
+      $cursor.style.left = startX + "px";
+      $cursor.style.top = startY + "px";
+      $box.classList.add("visible");
+      $cursor.classList.add("visible");
+      // Force layout so the 0x0 starting state commits before the
+      // transition-triggering size change below.
+      void $box.getBoundingClientRect();
+
+      setTimeout(() => {
+        $box.classList.add("animating");
+        $cursor.classList.add("animating");
+        $box.style.left = startX + "px";
+        $box.style.top = startY + "px";
+        $box.style.width = (endX - startX) + "px";
+        $box.style.height = (endY - startY) + "px";
+        $cursor.style.left = (endX - 4) + "px";
+        $cursor.style.top = (endY - 4) + "px";
+      }, 20);
+
+      setTimeout(() => $cursor.classList.remove("visible"), 650);
+      setTimeout(() => $box.classList.remove("visible"), 2100);
+    }, 500);
+  })();
+
+  /* ============================================================
+     Hero sequence: window appears -> types headline, subhead fades in ->
+     drag-select animates over the headline -> toolbars pop in.
+     Desktop/tablet only — see the phone-hero block above for narrow
+     viewports.
+  ============================================================ */
+  (function () {
+    const isPhoneHero = window.matchMedia && window.matchMedia("(max-width: 640px)").matches;
+    const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (isPhoneHero) return;
+
+    const headlineHTML = "A magical way to capture<br>all your best ideas";
+    const subheadHTML = "Kagami grabs screenshots, recordings, and GIFs in a<br>free, open-source menu bar app for MacOS.";
+
+    const $headline = document.getElementById("typeHeadline");
+    const $subhead = document.getElementById("typeSubhead");
+    const $screen = document.getElementById("mbScreen");
+    const $window = document.getElementById("fakeWindow");
+    const $cta = document.getElementById("fwCta");
+    const $selection = document.getElementById("selectionBox");
+    const $selLabel = document.getElementById("selLabel");
+    const $cursor = document.getElementById("dragCursor");
+    const $floatingUI = document.getElementById("floatingUI");
+
+    function showToolbars() {
+      $floatingUI.classList.add("show");
+    }
+
+    if (reduceMotion) {
+      $headline.innerHTML = headlineHTML;
+      $subhead.innerHTML = subheadHTML;
+      $subhead.classList.add("show");
+      $cta.classList.add("show");
+      showToolbars();
+      return;
+    }
+
+    // Types `html` into `el` character-by-character (tag-aware: whole tags are
+    // inserted in one step, plain text is revealed one char at a time), then
+    // calls `onDone`.
+    function typeInto(el, html, speed, onDone) {
+      const cursor = document.createElement("span");
+      cursor.className = "type-cursor";
+      let i = 0;
+
+      function step() {
+        if (i >= html.length) {
+          cursor.remove();
+          onDone && onDone();
+          return;
+        }
+        let chunk;
+        if (html[i] === "<") {
+          const close = html.indexOf(">", i);
+          chunk = html.slice(i, close + 1);
+        } else {
+          chunk = html[i];
+        }
+        i += chunk.length;
+        el.insertAdjacentHTML("beforeend", chunk);
+        el.appendChild(cursor);
+        setTimeout(step, speed);
+      }
+      step();
+    }
+
+    function runSelectionDrag(onDone) {
+      const screenRect = $screen.getBoundingClientRect();
+      const target = $window.getBoundingClientRect();
+      // Drag out to just beyond the window's own edges — reads as "grabbed
+      // the whole window", matching how a real drag usually overshoots.
+      const pad = 10;
+
+      const startX = target.left - screenRect.left - pad;
+      const startY = target.top - screenRect.top - pad;
+      const endX = target.right - screenRect.left + pad;
+      const endY = target.bottom - screenRect.top + pad;
+
+      $selLabel.textContent = Math.round(endX - startX) + " × " + Math.round(endY - startY);
+
+      // Start: zero-size box + cursor at the drag's origin corner.
+      $selection.style.left = startX + "px";
+      $selection.style.top = startY + "px";
+      $selection.style.width = "0px";
+      $selection.style.height = "0px";
+      $cursor.style.left = startX + "px";
+      $cursor.style.top = startY + "px";
+
+      $selection.classList.add("visible");
+      $cursor.classList.add("visible");
+      // Force layout so the 0x0 starting state is committed before the
+      // transition-triggering size change below (getBoundingClientRect
+      // forces a synchronous reflow — more reliable under both real
+      // browsers and headless/virtual-time testing than double-rAF).
+      void $selection.getBoundingClientRect();
+
+      setTimeout(() => {
+        $selection.classList.add("animating");
+        $cursor.classList.add("animating");
+        $selection.style.left = startX + "px";
+        $selection.style.top = startY + "px";
+        $selection.style.width = (endX - startX) + "px";
+        $selection.style.height = (endY - startY) + "px";
+        $cursor.style.left = (endX - 4) + "px";
+        $cursor.style.top = (endY - 4) + "px";
+      }, 20);
+
+      setTimeout(() => {
+        $cursor.classList.remove("visible");
+        onDone && onDone();
+      }, 700);
+    }
+
+    // Kick off once the window has finished appearing (~1.6s).
+    setTimeout(() => {
+      typeInto($headline, headlineHTML, 42, () => {
+        setTimeout(() => {
+          $subhead.innerHTML = subheadHTML;
+          $subhead.classList.add("show");
+          setTimeout(() => {
+            $cta.classList.add("show");
+            setTimeout(() => {
+              runSelectionDrag(() => {
+                setTimeout(showToolbars, 250);
+              });
+            }, 550);
+          }, 450);
+        }, 250);
+      });
+    }, 1650);
+  })();
+</script>
+</html>

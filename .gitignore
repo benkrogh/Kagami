@@ -1,0 +1,17 @@
+# Swift Package Manager
+.build/
+.swiftpm/
+
+# Xcode
+xcuserdata/
+DerivedData/
+*.xcscmblueprint
+*.xccheckout
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Build output — distributed via GitHub Releases, not tracked in git.
+/Kagami.app/
+/dist/

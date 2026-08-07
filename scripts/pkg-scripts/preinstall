@@ -1,0 +1,4 @@
+#!/bin/bash
+# Quit a running Kagami so the installer can replace /Applications/Kagami.app.
+pkill -x "Kagami" 2>/dev/null || true
+exit 0
